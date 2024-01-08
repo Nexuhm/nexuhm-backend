@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app.module';
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -8,6 +8,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import * as basicAuth from 'express-basic-auth';
 import * as cookieParser from 'cookie-parser';
+import { WinstonLoggerService } from './lib/modules/logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -47,9 +48,10 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3000;
+  const logger = await app.resolve(WinstonLoggerService);
 
   await app.listen(port, '0.0.0.0', () => {
-    console.log(`Listeining on port ${port}`);
+    logger.log(`Nest application is listeining on port ${port}`);
   });
 }
 
