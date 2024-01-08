@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
-import { HttpExceptionFilter } from './exception.filter';
+import { HttpExceptionFilter } from './logger.exception-filter';
 import {
   LoggerServiceOptions,
   WinstonLoggerService,
