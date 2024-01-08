@@ -1,19 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedArraySubdocument, HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import { UserIntegration } from './user-integration.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema({ _id: false })
-export class UserPassword {
-  @Prop({ required: true })
-  hash: string;
+export type SignUpMethod = 'website' | 'google' | 'linkedin' | 'microsoft';
 
-  @Prop({ required: true })
-  salt: string;
+export interface UserMetaData {
+  signUpMethod: SignUpMethod;
 }
-
-export const UserPasswordSchema = SchemaFactory.createForClass(UserPassword);
 
 @Schema({ timestamps: true })
 export class User {
@@ -21,16 +16,18 @@ export class User {
   firstname: string;
 
   @Prop({ required: true })
-  lastname: number;
+  lastname: string;
 
   @Prop({ required: true })
   email: string;
 
+  @Prop()
+  pricture: string;
+
   @Prop({
-    type: UserPassword,
     select: false,
   })
-  password: UserPassword;
+  password: string;
 
   @Prop({
     type: [
@@ -41,6 +38,9 @@ export class User {
     ],
   })
   integrations: UserIntegration[];
+
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  metaData: UserMetaData;
 }
 
-export const CatSchema = SchemaFactory.createForClass(User);
+export const UserSchema = SchemaFactory.createForClass(User);

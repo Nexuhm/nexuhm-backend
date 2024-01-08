@@ -5,14 +5,32 @@ import { LinkedInStrategy } from './strategies/linkedin.strategy';
 import { LinkedInOAuthController } from './controllers/linkedin-oauth.controller';
 import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import { MicrosodtOAuthController } from './controllers/microsoft-oauth.controller';
+import { UsersModule } from '../users/users.module';
+import { LocalStrategy } from './strategies/local.strategy';
+import { AuthService } from './services/auth.service';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from './controllers/auth.controller';
 
 @Module({
-  imports: [],
+  imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: process.env.JWT_EXPIRATION_TIME },
+    }),
+    UsersModule,
+  ],
   controllers: [
+    AuthController,
     GoogleOAuthController,
     LinkedInOAuthController,
     MicrosodtOAuthController,
   ],
-  providers: [GoogleStrategy, LinkedInStrategy, MicrosoftStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    GoogleStrategy,
+    LinkedInStrategy,
+    MicrosoftStrategy,
+  ],
 })
 export class AuthModule {}
