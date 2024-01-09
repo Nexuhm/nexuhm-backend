@@ -10,7 +10,7 @@ import { LoggerModule } from './lib/modules/logger/logger.module';
   imports: [
     LoggerModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
+    MongooseModule.forRoot(process.env.MONGODB_URI!),
     DevtoolsModule.register({
       http: process.env.NODE_ENV !== 'production',
     }),
