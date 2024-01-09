@@ -4,7 +4,7 @@ import { GoogleOAuthController } from './controllers/google-oauth.controller';
 import { LinkedInStrategy } from './strategies/linkedin.strategy';
 import { LinkedInOAuthController } from './controllers/linkedin-oauth.controller';
 import { MicrosoftStrategy } from './strategies/microsoft.strategy';
-import { MicrosodtOAuthController } from './controllers/microsoft-oauth.controller';
+import { MicrosoftOAuthController } from './controllers/microsoft-oauth.controller';
 import { UsersModule } from '../users/users.module';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthService } from './services/auth.service';
@@ -23,7 +23,7 @@ import { AuthController } from './controllers/auth.controller';
     AuthController,
     GoogleOAuthController,
     LinkedInOAuthController,
-    MicrosodtOAuthController,
+    MicrosoftOAuthController,
   ],
   providers: [
     AuthService,

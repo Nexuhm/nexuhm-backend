@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Request } from 'express';
 import { Strategy } from 'passport-oauth2';
 import * as jwt from 'jsonwebtoken';
+import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
 
 @Injectable()
 export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
@@ -27,10 +27,20 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   async validate(
     accessToken: string,
     refreshToken: string,
-    _: unknown,
+    __: unknown,
     done: Function,
   ): Promise<void> {
-    const data = jwt.decode(accessToken);
-    done(null, { accessToken, refreshToken });
+    const data: any = jwt.decode(accessToken);
+
+    const user: OAuthCallbackDto = {
+      type: 'microsoft',
+      email: data.unique_name,
+      firstname: data.family_name,
+      lastname: data.given_name,
+      accessToken,
+      refreshToken,
+    };
+
+    done(null, user);
   }
 }

@@ -1,3 +1,4 @@
+import { UserIntegration } from '@/modules/users/schemas/user-integration.schema';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignUpDto {
@@ -13,9 +14,7 @@ export class SignUpDto {
   @ApiProperty()
   password?: string;
 
-  picture: string;
+  picture?: string;
 
-  accessToken: string;
-
-  refreshToken: string;
+  integration: Omit<UserIntegration, '_id'>;
 }

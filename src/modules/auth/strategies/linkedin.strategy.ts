@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-linkedin-oauth2';
+import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
 
 @Injectable()
 export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
@@ -15,17 +16,17 @@ export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
 
   async validate(
     accessToken: string,
-    refreshToken: string,
+    _: unknown,
     profile: any,
     done: Function,
   ) {
     try {
-      // Here you would find or create a user in your database
-      const user = {
+      const user: OAuthCallbackDto = {
+        type: 'linkedin',
         email: profile.emails[0].value,
-        firstName: profile.name.givenName,
-        lastName: profile.name.familyName,
-        // other fields you might want to save
+        firstname: profile.name.givenName,
+        lastname: profile.name.familyName,
+        accessToken,
       };
 
       done(null, user);

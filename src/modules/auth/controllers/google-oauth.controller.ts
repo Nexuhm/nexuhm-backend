@@ -1,8 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { GoogleOAuthGuard } from '../guards/google-oauth.guard';
 import { User } from '@/lib/decorators/user.decorator';
-import { SignUpDto } from '../dto/signup.dto';
 import { AuthService } from '../services/auth.service';
+import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
 
 @Controller('auth/google')
 export class GoogleOAuthController {
@@ -14,7 +14,7 @@ export class GoogleOAuthController {
 
   @Get('callback')
   @UseGuards(GoogleOAuthGuard)
-  googleAuthRedirect(@User() user: SignUpDto) {
-    return this.authService.signUp(user, { signUpMethod: 'google' });
+  googleAuthRedirect(@User() user: OAuthCallbackDto) {
+    return this.authService.oauthCallback(user);
   }
 }

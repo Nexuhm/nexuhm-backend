@@ -22,7 +22,7 @@ export class User {
   email: string;
 
   @Prop()
-  pricture: string;
+  picture: string;
 
   @Prop({
     select: false,

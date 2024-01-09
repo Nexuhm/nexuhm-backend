@@ -1,21 +1,20 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { MicrosoftAuthGuard } from '../guards/microsoft-oauth.guard';
+import { AuthService } from '../services/auth.service';
+import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
+import { User } from '@/lib/decorators/user.decorator';
 
 @Controller('auth/microsoft')
-export class MicrosodtOAuthController {
+export class MicrosoftOAuthController {
+  constructor(private authService: AuthService) {}
+
   @Get()
   @UseGuards(MicrosoftAuthGuard)
-  microsoftLogin(): void {
-    // initiates the Microsoft login process
-  }
+  async microsoftAuth() {}
 
   @Get('callback')
   @UseGuards(MicrosoftAuthGuard)
-  microsoftCallback(@Req() req: Express.Request): any {
-    const user = req.user;
-
-    return {
-      success: true,
-    };
+  microsoftAuthRedirect(@User() user: OAuthCallbackDto) {
+    return this.authService.oauthCallback(user);
   }
 }
