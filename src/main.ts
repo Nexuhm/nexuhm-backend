@@ -39,6 +39,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Nexuhm API')
     .setDescription('The Nexuhm API endpoints')
+    .addBearerAuth()
     .setVersion('1.0')
     .build();
 

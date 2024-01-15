@@ -5,9 +5,11 @@ import { AuthService } from '../services/auth.service';
 import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
 import { OAuthCallbackInterceptor } from '../interceptors/oauth-callback.interceptor';
 import { OAuthCallback } from '../decorators/oauth-callback.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
-@UseInterceptors(OAuthCallbackInterceptor)
+@ApiTags('Google OAuth Controller')
 @Controller('auth/google')
+@UseInterceptors(OAuthCallbackInterceptor)
 export class GoogleOAuthController {
   constructor(private authService: AuthService) {}
 

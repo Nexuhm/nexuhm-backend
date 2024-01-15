@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { UserIntegration } from './user-integration.schema';
+import { CompanyDocument } from '@/modules/company/schemas/company.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -38,6 +39,12 @@ export class User {
     ],
   })
   integrations: UserIntegration[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+  })
+  company: CompanyDocument;
 
   @Prop({ type: mongoose.Schema.Types.Mixed })
   metaData: UserMetaData;

@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ProjectionType } from 'mongoose';
 import { User, UserDocument } from '@/modules/users/schemas/user.schema';
 import { UserIntegration } from '../schemas/user-integration.schema';
+import { CompanyService } from '@/modules/company/services/company.service';
+import { toPossessive } from '@/lib/utils';
 
 @Injectable()
 export class UsersService {
@@ -10,10 +12,22 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(UserIntegration.name)
     private readonly integrationModel: Model<UserIntegration>,
+    private companyService: CompanyService,
   ) {}
 
-  create(fields: Partial<User>): Promise<UserDocument> {
-    return this.userModel.create(fields);
+  /**
+   * Creates a new user with the given fields. If no company is provided in the fields,
+   * a new company is created for the user with a default name based on their first name.
+   */
+  async create(fields: Partial<User>): Promise<UserDocument> {
+    // Check if a company is provided, otherwise create a default company name.
+    const company =
+      fields.company ??
+      (await this.companyService.create({
+        name: `${toPossessive(fields.firstname)} company`,
+      }));
+
+    return this.userModel.create({ ...fields, company });
   }
 
   findByEmail(

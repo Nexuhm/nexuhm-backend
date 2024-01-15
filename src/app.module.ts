@@ -5,6 +5,8 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MorganLoggerMiddleware } from '@/lib/modules/logger/logger.middleware';
 import { LoggerModule } from './lib/modules/logger/logger.module';
+import { UsersModule } from './modules/users/users.module';
+import { JobsModule } from './modules/jobs/jobs.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { LoggerModule } from './lib/modules/logger/logger.module';
       http: process.env.NODE_ENV !== 'production',
     }),
     AuthModule,
+    UsersModule,
+    JobsModule,
   ],
 })
 export class AppModule {

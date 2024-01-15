@@ -6,6 +6,7 @@ import {
   UserIntegration,
   UserIntegrationSchema,
 } from './schemas/user-integration.schema';
+import { CompanyModule } from '../company/company.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import {
         useFactory: () => UserIntegrationSchema,
       },
     ]),
+    CompanyModule,
   ],
   exports: [UsersService],
   providers: [UsersService],

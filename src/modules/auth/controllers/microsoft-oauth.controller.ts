@@ -5,7 +5,9 @@ import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
 import { User } from '@/lib/decorators/user.decorator';
 import { OAuthCallbackInterceptor } from '../interceptors/oauth-callback.interceptor';
 import { OAuthCallback } from '../decorators/oauth-callback.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Microsoft OAuth Controller')
 @UseInterceptors(OAuthCallbackInterceptor)
 @Controller('auth/microsoft')
 export class MicrosoftOAuthController {
