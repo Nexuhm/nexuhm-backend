@@ -1,9 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
 import { GoogleOAuthGuard } from '../guards/google-oauth.guard';
 import { User } from '@/lib/decorators/user.decorator';
 import { AuthService } from '../services/auth.service';
 import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
+import { OAuthCallbackInterceptor } from '../interceptors/oauth-callback.interceptor';
+import { OAuthCallback } from '../decorators/oauth-callback.decorator';
 
+@UseInterceptors(OAuthCallbackInterceptor)
 @Controller('auth/google')
 export class GoogleOAuthController {
   constructor(private authService: AuthService) {}
@@ -14,6 +17,7 @@ export class GoogleOAuthController {
 
   @Get('callback')
   @UseGuards(GoogleOAuthGuard)
+  @OAuthCallback()
   googleAuthRedirect(@User() user: OAuthCallbackDto) {
     return this.authService.oauthCallback(user);
   }

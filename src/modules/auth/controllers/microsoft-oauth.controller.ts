@@ -1,9 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
 import { MicrosoftAuthGuard } from '../guards/microsoft-oauth.guard';
 import { AuthService } from '../services/auth.service';
 import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
 import { User } from '@/lib/decorators/user.decorator';
+import { OAuthCallbackInterceptor } from '../interceptors/oauth-callback.interceptor';
+import { OAuthCallback } from '../decorators/oauth-callback.decorator';
 
+@UseInterceptors(OAuthCallbackInterceptor)
 @Controller('auth/microsoft')
 export class MicrosoftOAuthController {
   constructor(private authService: AuthService) {}
@@ -14,6 +17,7 @@ export class MicrosoftOAuthController {
 
   @Get('callback')
   @UseGuards(MicrosoftAuthGuard)
+  @OAuthCallback()
   microsoftAuthRedirect(@User() user: OAuthCallbackDto) {
     return this.authService.oauthCallback(user);
   }

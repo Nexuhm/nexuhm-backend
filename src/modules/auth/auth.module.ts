@@ -10,6 +10,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './controllers/auth.controller';
+import { OAuthCallbackInterceptor } from './interceptors/oauth-callback.interceptor';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AuthController } from './controllers/auth.controller';
     GoogleStrategy,
     LinkedInStrategy,
     MicrosoftStrategy,
+    OAuthCallbackInterceptor,
   ],
 })
 export class AuthModule {}
