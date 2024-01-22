@@ -11,6 +11,7 @@ import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './controllers/auth.controller';
 import { OAuthCallbackInterceptor } from './interceptors/oauth-callback.interceptor';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OAuthCallbackInterceptor } from './interceptors/oauth-callback.intercep
   ],
   providers: [
     AuthService,
+    JwtStrategy,
     LocalStrategy,
     GoogleStrategy,
     LinkedInStrategy,
