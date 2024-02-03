@@ -10,11 +10,23 @@ export class Company {
   @Prop()
   name: string;
 
-  @Prop()
+  @Prop({ unique: true })
   slug: string;
 
   @Prop()
   description: string;
+
+  @Prop()
+  address: string;
+
+  @Prop()
+  companySize: string;
+
+  @Prop()
+  industry: string;
+
+  @Prop()
+  website: string;
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);
