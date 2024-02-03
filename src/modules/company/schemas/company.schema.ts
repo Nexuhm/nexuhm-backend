@@ -11,6 +11,9 @@ export class Company {
   name: string;
 
   @Prop()
+  slug: string;
+
+  @Prop()
   description: string;
 }
 

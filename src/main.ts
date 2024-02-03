@@ -23,6 +23,7 @@ async function bootstrap() {
       /^http:\/\/localhost(:\d+)?$/,
       /^https:\/\/[a-z0-9.-]+\.nexuhm\.com$/,
     ],
+    credentials: true,
   });
 
   // use basic auth for Swagger UI

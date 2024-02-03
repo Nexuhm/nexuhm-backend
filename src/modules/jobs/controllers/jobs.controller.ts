@@ -1,10 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JobsService } from '../services/jobs.service';
 import { User } from '@/lib/decorators/user.decorator';
 import { UserDocument } from '@/modules/users/schemas/user.schema';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JobGenerationDto } from '../dto/job-generation.dto';
+import { JobPostingState } from '../types/job-posting-state.enum';
 
 @ApiTags('Jobs Controller')
 @Controller('/jobs')
@@ -12,21 +13,24 @@ import { JobGenerationDto } from '../dto/job-generation.dto';
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
-  @Post()
+  @Get()
   @ApiOperation({ description: "Get job posting of user's company" })
   @ApiBearerAuth()
   getJobs(@User() user: UserDocument) {
-    return this.jobsService.find({
-      company: user.company,
-    });
+    return this.jobsService
+      .find({
+        company: user.company,
+      })
+      .populate('totalCandidates');
   }
 
   @Post()
-  @ApiOperation({ description: "Create job posting for user's company" })
+  @ApiOperation({ description: 'Create job posting draft' })
   @ApiBearerAuth()
   createJobPosting(@User() user: UserDocument, @Body() body) {
     return this.jobsService.create({
       ...body,
+      state: JobPostingState.Draft,
       company: user.company,
     });
   }

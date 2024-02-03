@@ -7,6 +7,7 @@ import { MorganLoggerMiddleware } from '@/lib/modules/logger/logger.middleware';
 import { LoggerModule } from './lib/modules/logger/logger.module';
 import { UsersModule } from './modules/users/users.module';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { CandidatesModule } from './modules/candidates/candidates.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
     AuthModule,
     UsersModule,
     JobsModule,
+    CandidatesModule,
   ],
 })
 export class AppModule {
