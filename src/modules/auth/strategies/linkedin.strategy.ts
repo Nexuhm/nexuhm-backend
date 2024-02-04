@@ -9,7 +9,7 @@ export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
     super({
       clientID: process.env.LINKEDIN_CLIENT_ID,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/auth/linkedin/callback',
+      callbackURL: `${process.env.BASE_URL}/auth/linkedin/callback`,
       scope: ['r_emailaddress', 'r_liteprofile'],
     });
   }

@@ -12,7 +12,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
       tokenURL: `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}/oauth2/v2.0/token`,
       clientID: process.env.MICROSOFT_CLIENT_ID,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/auth/microsoft/callback',
+      callbackURL: `${process.env.BASE_URL}/auth/microsoft/callback`,
       scope: [
         'openid',
         'profile',
