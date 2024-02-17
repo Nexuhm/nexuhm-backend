@@ -22,7 +22,7 @@ import { CompanyModule } from '../company/company.module';
     ]),
     CompanyModule,
   ],
-  exports: [UsersService],
+  exports: [UsersService, MongooseModule],
   providers: [UsersService],
 })
 export class UsersModule {}
