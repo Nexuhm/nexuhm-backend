@@ -17,6 +17,9 @@ export class Company {
   description: string;
 
   @Prop()
+  cultureDescription: string;
+
+  @Prop()
   address: string;
 
   @Prop()

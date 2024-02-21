@@ -3,6 +3,7 @@ import { Company, CompanySchema } from './schemas/company.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CompanyService } from './services/company.service';
 import { OnboardingController } from './controllers/onboarding.controller';
+import { CompanyController } from './controllers/company.controller';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { OnboardingController } from './controllers/onboarding.controller';
   ],
   exports: [CompanyService],
   providers: [CompanyService],
-  controllers: [OnboardingController],
+  controllers: [OnboardingController, CompanyController],
 })
 export class CompanyModule {}
