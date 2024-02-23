@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CompanyService } from './services/company.service';
 import { OnboardingController } from './controllers/onboarding.controller';
 import { CompanyController } from './controllers/company.controller';
+import { CareersPage, CareersPageSchema } from './schemas/careers-page.schema';
+import { CareersPageController } from './controllers/careers-page.controller';
 
 @Module({
   imports: [
@@ -12,10 +14,14 @@ import { CompanyController } from './controllers/company.controller';
         name: Company.name,
         useFactory: () => CompanySchema,
       },
+      {
+        name: CareersPage.name,
+        useFactory: () => CareersPageSchema,
+      },
     ]),
   ],
   exports: [CompanyService],
   providers: [CompanyService],
-  controllers: [OnboardingController, CompanyController],
+  controllers: [OnboardingController, CompanyController, CareersPageController],
 })
 export class CompanyModule {}

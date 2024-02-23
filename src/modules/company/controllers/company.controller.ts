@@ -2,9 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   NotFoundException,
-  Post,
+  Param,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -16,12 +17,15 @@ import { Model } from 'mongoose';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard';
 import { User } from '@/lib/decorators/user.decorator';
 import { UserDocument } from '@/modules/users/schemas/user.schema';
+import { CareersPage } from '../schemas/careers-page.schema';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/admin/company')
 export class CompanyController {
   constructor(
     @InjectModel(Company.name) private readonly companyModel: Model<Company>,
+    @InjectModel(CareersPage.name)
+    private readonly careersPageModel: Model<CareersPage>,
   ) {}
 
   @Get()
@@ -33,6 +37,44 @@ export class CompanyController {
     }
 
     return company;
+  }
+
+  @Get('/:companyId/careers-page')
+  async getCareersPage(@Param('companyId') companyId) {
+    const company = await this.companyModel.findById(companyId);
+    const careersPage = await this.careersPageModel.findOne({ company });
+    return careersPage;
+  }
+
+  @Put('/:companyId/careers-page')
+  async updateCareersPage(
+    @Param('companyId') companyId,
+    @User() user: UserDocument,
+    @Body() body,
+  ) {
+    const company = await this.companyModel.findById(companyId);
+
+    if (!company) {
+      throw new NotFoundException();
+    }
+
+    const careersPage = await this.careersPageModel.findOneAndUpdate(
+      { company },
+      {
+        ...body,
+        company,
+      },
+      {
+        upsert: true,
+        new: true,
+      },
+    );
+
+    if (user.company.equals(company!)) {
+      throw new ForbiddenException();
+    }
+
+    return careersPage;
   }
 
   /**

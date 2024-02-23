@@ -25,6 +25,7 @@ export class AccountController {
       picture: user.picture,
       firstname: user.firstname,
       lastname: user.lastname,
+      company: user.company,
     };
   }
 }
