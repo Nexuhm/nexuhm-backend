@@ -1,36 +1,23 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  NotFoundException,
-  Param,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
-import { CompanyDetailsDto } from '../dto/onboarding-details.dto';
-import { ApiBody } from '@nestjs/swagger';
+import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Company } from '../schemas/company.schema';
 import { Model } from 'mongoose';
-import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard';
-import { User } from '@/lib/decorators/user.decorator';
-import { UserDocument } from '@/modules/users/schemas/user.schema';
-import { CareersPage } from '../schemas/careers-page.schema';
+import { JobPosting } from '@/modules/jobs/schemas/job-posting.schema';
+import { JobPostingState } from '@/modules/jobs/types/job-posting-state.enum';
 
-@UseGuards(JwtAuthGuard)
-@Controller('/admin/company')
+@Controller('/company')
 export class CompanyController {
   constructor(
     @InjectModel(Company.name) private readonly companyModel: Model<Company>,
-    @InjectModel(CareersPage.name)
-    private readonly careersPageModel: Model<CareersPage>,
+    @InjectModel(JobPosting.name)
+    private readonly jobPostingModel: Model<JobPosting>,
   ) {}
 
-  @Get()
-  async getCompanyDetails(@User() user: UserDocument) {
-    const company = await this.companyModel.findById(user.company);
+  @Get('/:slug')
+  async getCareersPage(@Param('slug') slug) {
+    const company = await this.companyModel
+      .findOne({ slug })
+      .populate('careersPage');
 
     if (!company) {
       throw new NotFoundException();
@@ -39,66 +26,14 @@ export class CompanyController {
     return company;
   }
 
-  @Get('/:companyId/careers-page')
-  async getCareersPage(@Param('companyId') companyId) {
-    const company = await this.companyModel.findById(companyId);
-    const careersPage = await this.careersPageModel.findOne({ company });
-    return careersPage;
-  }
+  @Get('/:slug/openings')
+  async getOpenPosition(@Param('slug') slug) {
+    const company = await this.companyModel.findOne({ slug });
+    const jobs = await this.jobPostingModel.find({
+      company,
+      state: JobPostingState.Published,
+    });
 
-  @Put('/:companyId/careers-page')
-  async updateCareersPage(
-    @Param('companyId') companyId,
-    @User() user: UserDocument,
-    @Body() body,
-  ) {
-    const company = await this.companyModel.findById(companyId);
-
-    if (!company) {
-      throw new NotFoundException();
-    }
-
-    const careersPage = await this.careersPageModel.findOneAndUpdate(
-      { company },
-      {
-        ...body,
-        company,
-      },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-
-    if (user.company.equals(company!)) {
-      throw new ForbiddenException();
-    }
-
-    return careersPage;
-  }
-
-  /**
-   * Updates the company details for a user.
-   *
-   * @param {number} stage - The stage of onboarding.
-   * @param {CompanyDetailsDto} fields - The updated company details.
-   * @param {UserDocument} user - The user document.
-   * @returns {Promise<void>} A Promise representing the result of the update operation.
-   */
-  @Put()
-  @ApiBody({ type: CompanyDetailsDto })
-  async setCompanyDetails(
-    @Body() fields: CompanyDetailsDto,
-    @User() user: UserDocument,
-  ) {
-    const company = await this.companyModel.findById(user.company);
-
-    if (!company) {
-      throw new BadRequestException();
-    }
-
-    company.set(fields);
-    await company.save();
-    return company;
+    return jobs;
   }
 }

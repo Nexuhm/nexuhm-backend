@@ -3,9 +3,13 @@ import { Company, CompanySchema } from './schemas/company.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CompanyService } from './services/company.service';
 import { OnboardingController } from './controllers/onboarding.controller';
-import { CompanyController } from './controllers/company.controller';
+import { CompanyAdminController } from './controllers/admin.controller';
 import { CareersPage, CareersPageSchema } from './schemas/careers-page.schema';
-import { CareersPageController } from './controllers/careers-page.controller';
+import { CompanyController } from './controllers/company.controller';
+import {
+  JobPosting,
+  JobPostingSchema,
+} from '../jobs/schemas/job-posting.schema';
 
 @Module({
   imports: [
@@ -18,10 +22,18 @@ import { CareersPageController } from './controllers/careers-page.controller';
         name: CareersPage.name,
         useFactory: () => CareersPageSchema,
       },
+      {
+        name: JobPosting.name,
+        useFactory: () => JobPostingSchema,
+      },
     ]),
   ],
   exports: [CompanyService],
   providers: [CompanyService],
-  controllers: [OnboardingController, CompanyController, CareersPageController],
+  controllers: [
+    OnboardingController,
+    CompanyAdminController,
+    CompanyController,
+  ],
 })
 export class CompanyModule {}
