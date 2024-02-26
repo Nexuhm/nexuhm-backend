@@ -27,7 +27,7 @@ COPY --from=builder /app/dist ./dist
 COPY package.json yarn.lock ./
 
 # Install only production dependencies
-RUN yarn install --frozen-lockfile --production
+RUN yarn install --frozen-lockfile --production --ignore-engines
 
 # Define the command to run your NestJS application
 CMD ["node", "dist/main"]
