@@ -20,6 +20,10 @@ export class JobsService {
     return this.jobPostingModel.find(fields);
   }
 
+  findBySlug(slug: string) {
+    return this.jobPostingModel.findOne({ slug });
+  }
+
   create(fields: AnyKeys<JobPosting>) {
     return this.jobPostingModel.create(fields);
   }

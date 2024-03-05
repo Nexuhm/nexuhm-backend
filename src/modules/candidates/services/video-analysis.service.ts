@@ -112,10 +112,11 @@ export class VideoAnalysisService {
     return response.data;
   }
 
-  async getTranscripts(videoBuffer: Buffer, fileName: string): Promise<any> {
+  async startVideoProcessing(
+    videoBuffer: Buffer,
+    fileName: string,
+  ): Promise<any> {
     const accessToken = await this.getAccessToken();
-    const videoId = await this.uploadVideo(accessToken, videoBuffer, fileName);
-    const res = await this.getVideoCaptions(accessToken, videoId);
-    return res;
+    await this.uploadVideo(accessToken, videoBuffer, fileName);
   }
 }

@@ -17,6 +17,9 @@ export class Candidate {
   @Prop()
   email: string;
 
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  files: any;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'JobPosting',

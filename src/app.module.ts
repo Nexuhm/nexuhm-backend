@@ -8,8 +8,9 @@ import { LoggerModule } from './lib/modules/logger/logger.module';
 import { UsersModule } from './modules/users/users.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { CandidatesModule } from './modules/candidates/candidates.module';
-import { MediaModule } from './modules/media/media.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { AccountModule } from './modules/account/account.module';
+import { EmailsModule } from './modules/emails/emails.module';
 
 @Module({
   imports: [
@@ -23,8 +24,9 @@ import { AccountModule } from './modules/account/account.module';
     UsersModule,
     JobsModule,
     CandidatesModule,
-    MediaModule,
+    StorageModule,
     AccountModule,
+    EmailsModule,
   ],
 })
 export class AppModule {

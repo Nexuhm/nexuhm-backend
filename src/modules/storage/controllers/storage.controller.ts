@@ -16,6 +16,7 @@ import { Request } from 'express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { promises as fs } from 'fs';
+import { AzureStorageService } from '../services/azure-storage.service';
 
 export const multerConfig = {
   storage: diskStorage({
@@ -50,7 +51,7 @@ export const multerConfig = {
 export class MediaController {
   private containerClient: ContainerClient;
 
-  constructor() {
+  constructor(private azureStorageService: AzureStorageService) {
     const containerName = 'assets';
     const blobServiceClient = BlobServiceClient.fromConnectionString(
       process.env.AZURE_STORAGE_CONNECTION_STRING as string,
@@ -75,13 +76,11 @@ export class MediaController {
 
       // Azure Blob Storage upload
       const blobName = filename || file.filename;
-      const blockBlobClient = this.containerClient.getBlockBlobClient(
+      const blockBlobClient = await this.azureStorageService.uploadBlob(
         path.join(folder, blobName),
+        compressedImage,
+        file.mimetype,
       );
-
-      await blockBlobClient.uploadData(compressedImage, {
-        blobHTTPHeaders: { blobContentType: file.mimetype },
-      });
 
       return {
         url: blockBlobClient.url,

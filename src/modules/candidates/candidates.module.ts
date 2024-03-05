@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Candidate, CandidateSchema } from './schemas/candidate.schema';
 import { HttpModule } from '@nestjs/axios';
-import { CandidatesController } from './controllers/candidates.controller';
 import { VideoAnalysisService } from './services/video-analysis.service';
+import { StorageModule } from '../storage/storage.module';
+import { CandidateController } from './controllers/candidate.controller';
+import { CandidateService } from './services/candidate.service';
 
 @Module({
   imports: [
@@ -14,8 +16,10 @@ import { VideoAnalysisService } from './services/video-analysis.service';
       },
     ]),
     HttpModule,
+    StorageModule,
   ],
-  controllers: [CandidatesController],
-  providers: [VideoAnalysisService],
+  exports: [MongooseModule, VideoAnalysisService],
+  providers: [VideoAnalysisService, CandidateService],
+  controllers: [CandidateController],
 })
 export class CandidatesModule {}

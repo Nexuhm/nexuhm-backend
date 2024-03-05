@@ -1,49 +1,136 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { JobsService } from '../services/jobs.service';
-import { User } from '@/lib/decorators/user.decorator';
-import { UserDocument } from '@/modules/users/schemas/user.schema';
-import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JobGenerationDto } from '../dto/job-generation.dto';
-import { JobPostingState } from '../types/job-posting-state.enum';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { VideoAnalysisService } from '@/modules/candidates/services/video-analysis.service';
+import { Model } from 'mongoose';
+import { Candidate } from '@/modules/candidates/schemas/candidate.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { AzureStorageService } from '@/modules/storage/services/azure-storage.service';
+import { JobApplicationDto } from '../dto/job-application.dto';
+import { EmailService } from '@/modules/emails/services/email.service';
+import { ApplicationSuccessTemplate } from '@/modules/emails/templates/application-success.template';
 
 @ApiTags('Jobs Controller')
 @Controller('/jobs')
-@UseGuards(JwtAuthGuard)
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(
+    @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
+    private readonly videoAnalysisService: VideoAnalysisService,
+    private readonly azureStorageService: AzureStorageService,
+    private readonly jobsService: JobsService,
+    private readonly emailServive: EmailService,
+    private readonly applicationSuccessTemplate: ApplicationSuccessTemplate,
+  ) {}
 
-  @Get()
-  @ApiOperation({ description: "Get job posting of user's company" })
-  @ApiBearerAuth()
-  getJobs(@User() user: UserDocument) {
-    return this.jobsService
-      .find({
-        company: user.company,
-      })
-      .populate('totalCandidates');
+  @Get('/:slug')
+  @ApiOperation({ description: 'Get job posting details' })
+  getJobs(@Param('slug') slug) {
+    return this.jobsService.findBySlug(slug);
   }
 
-  @Post()
-  @ApiOperation({ description: 'Create job posting draft' })
-  @ApiBearerAuth()
-  createJobPosting(@User() user: UserDocument, @Body() body) {
-    return this.jobsService.create({
-      ...body,
-      state: JobPostingState.Draft,
-      company: user.company,
-    });
-  }
-
-  @Post('/generate')
-  @ApiOperation({
-    description: 'Generate job posting based on given title and description',
-  })
-  @ApiBearerAuth()
-  generateJobPosting(
-    @User() user: UserDocument,
-    @Body() body: JobGenerationDto,
+  @Post('/:slug/apply')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'resume', maxCount: 1 },
+      { name: 'coverLetter', maxCount: 1 },
+      { name: 'videoResume', maxCount: 1 },
+    ]),
+  )
+  async createCandidate(
+    @Param('slug') slug,
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
+    @Body() body: JobApplicationDto,
   ) {
-    return this.jobsService.generateJobPosting(body, user);
+    const job = await this.jobsService.findBySlug(slug).populate('company');
+
+    // const exists = await this.candidateModel.exists({
+    //   email: body.email,
+    //   job,
+    // });
+
+    // if (exists) {
+    //   throw new BadRequestException('Candidate already applied for this job');
+    // }
+
+    // const candidate = await this.candidateModel.create({
+    //   firstname: body.firstname,
+    //   lastname: body.lastname,
+    //   email: body.email,
+    //   job,
+    // });
+
+    // const suffix = candidate._id.toString().substring(0, 5);
+    // const filePrefix = `${candidate.firstname}-${candidate.lastname}-${suffix}`;
+    // const fileList = [
+    //   {
+    //     name: `${filePrefix}/${files['resume'][0].filename}`,
+    //     file: files['resume'][0],
+    //     field: 'resume',
+    //   },
+    //   {
+    //     name: `${filePrefix}/${files['coverLetter'][0].filename}`,
+    //     file: files['coverLetter'][0],
+    //     field: 'coverLetter',
+    //   },
+    //   {
+    //     name: `${filePrefix}/${files['videoResume'][0].filename}`,
+    //     file: files['videoResume'][0],
+    //     field: 'videoResume',
+    //   },
+    // ];
+
+    // const promises = fileList.map(async ({ name, field, file }) => {
+    //   const client = await this.azureStorageService.uploadBlob(
+    //     name,
+    //     file.buffer,
+    //   );
+
+    //   return {
+    //     type: field,
+    //     url: client.url,
+    //   };
+    // });
+
+    // const fileUrls = await Promise.all(promises);
+    // candidate.set('files', fileUrls);
+    // await candidate.save();
+
+    // this.videoAnalysisService.startVideoProcessing(
+    //   files.videoResume[0].buffer,
+    //   files.videoResume[0].originalname,
+    // );
+
+    const result = this.applicationSuccessTemplate.render({
+      logo: job?.company.logo,
+      username: `${body.firstname} ${body.lastname}`,
+    });
+
+    await this.emailServive.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: 'Thank you for your Application',
+        html: result.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: body.email,
+            displayName: `${body.firstname} ${body.lastname}`,
+          },
+        ],
+      },
+    });
+
+    return true;
   }
 }

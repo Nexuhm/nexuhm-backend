@@ -52,6 +52,11 @@ export class JobPosting {
     ],
   })
   state: JobPostingState;
+
+  @Prop({
+    type: Date,
+  })
+  publishedAt: Date;
 }
 
 export const JobPostingSchema = SchemaFactory.createForClass(JobPosting);
