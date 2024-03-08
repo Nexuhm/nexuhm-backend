@@ -3,9 +3,72 @@ import * as pdfParse from 'pdf-parse';
 import { ChatOpenAI } from '@langchain/openai';
 import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { InjectModel } from '@nestjs/mongoose';
+import { Candidate } from '../schemas/candidate.schema';
+import { FilterQuery, Model } from 'mongoose';
+import { UserDocument } from '@/modules/users/schemas/user.schema';
+import { CandidateNote } from '../schemas/candidate-note.schema';
 
 @Injectable()
 export class CandidateService {
+  constructor(
+    @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
+    @InjectModel(CandidateNote.name) private noteModel: Model<CandidateNote>,
+  ) {}
+
+  find(filters: FilterQuery<Candidate> = {}) {
+    return this.candidateModel.find(filters);
+  }
+
+  count(filters: FilterQuery<Candidate> = {}) {
+    return this.candidateModel.countDocuments(filters);
+  }
+
+  findById(id: string) {
+    return this.candidateModel.findById(id);
+  }
+
+  async createNote(candidateId: string, author: UserDocument, content: string) {
+    const candidate = await this.findById(candidateId);
+
+    const note = await this.noteModel.create({
+      candidate,
+      author,
+      note: content,
+    });
+
+    await candidate?.updateOne({
+      $addToSet: {
+        notes: note,
+      },
+    });
+
+    return {
+      author: note.author
+        ? `${note.author.firstname} ${note.author.lastname}`
+        : 'Nexuhm',
+      note: note.note,
+      createdAt: note.createdAt,
+    };
+  }
+
+  async getNotes(candidateId: string) {
+    const notes = await this.noteModel
+      .find({
+        candidate: candidateId,
+      })
+      .populate('author', 'firstname lastname')
+      .sort('-createdAt');
+
+    return notes.map((note) => ({
+      author: note.author
+        ? `${note.author.firstname} ${note.author.lastname}`
+        : 'Nexuhm',
+      note: note.note,
+      createdAt: note.createdAt,
+    }));
+  }
+
   async parseResume(file: Buffer) {
     const pdf = await pdfParse(file);
     const resumeContent = pdf.text;

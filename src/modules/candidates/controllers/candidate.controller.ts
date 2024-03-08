@@ -1,6 +1,5 @@
 import {
   Controller,
-  Param,
   Post,
   UploadedFile,
   UseInterceptors,

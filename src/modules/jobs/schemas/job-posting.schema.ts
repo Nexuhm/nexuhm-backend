@@ -6,7 +6,17 @@ import { CompanyDocument } from '@/modules/company/schemas/company.schema';
 
 export type JobPostingDocument = HydratedDocument<JobPosting>;
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    getters: true,
+  },
+  toObject: {
+    virtuals: true,
+    getters: true,
+  },
+})
 export class JobPosting {
   _id: mongoose.Schema.Types.ObjectId;
 

@@ -16,6 +16,10 @@ export class JobsService {
     private readonly jobPostingModel: Model<JobPosting>,
   ) {}
 
+  findOne(fields: FilterQuery<JobPosting>) {
+    return this.jobPostingModel.findOne(fields);
+  }
+
   find(fields: FilterQuery<JobPosting>) {
     return this.jobPostingModel.find(fields);
   }

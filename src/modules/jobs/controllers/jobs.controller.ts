@@ -53,62 +53,62 @@ export class JobsController {
   ) {
     const job = await this.jobsService.findBySlug(slug).populate('company');
 
-    // const exists = await this.candidateModel.exists({
-    //   email: body.email,
-    //   job,
-    // });
+    const exists = await this.candidateModel.exists({
+      email: body.email,
+      job,
+    });
 
-    // if (exists) {
-    //   throw new BadRequestException('Candidate already applied for this job');
-    // }
+    if (exists) {
+      throw new BadRequestException('Candidate already applied for this job');
+    }
 
-    // const candidate = await this.candidateModel.create({
-    //   firstname: body.firstname,
-    //   lastname: body.lastname,
-    //   email: body.email,
-    //   job,
-    // });
+    const candidate = await this.candidateModel.create({
+      firstname: body.firstname,
+      lastname: body.lastname,
+      email: body.email,
+      job,
+    });
 
-    // const suffix = candidate._id.toString().substring(0, 5);
-    // const filePrefix = `${candidate.firstname}-${candidate.lastname}-${suffix}`;
-    // const fileList = [
-    //   {
-    //     name: `${filePrefix}/${files['resume'][0].filename}`,
-    //     file: files['resume'][0],
-    //     field: 'resume',
-    //   },
-    //   {
-    //     name: `${filePrefix}/${files['coverLetter'][0].filename}`,
-    //     file: files['coverLetter'][0],
-    //     field: 'coverLetter',
-    //   },
-    //   {
-    //     name: `${filePrefix}/${files['videoResume'][0].filename}`,
-    //     file: files['videoResume'][0],
-    //     field: 'videoResume',
-    //   },
-    // ];
+    const suffix = candidate._id.toString().substring(0, 5);
+    const filePrefix = `${candidate.firstname}-${candidate.lastname}-${suffix}`;
+    const fileList = [
+      {
+        name: `${filePrefix}/${files['resume'][0].filename}`,
+        file: files['resume'][0],
+        field: 'resume',
+      },
+      {
+        name: `${filePrefix}/${files['coverLetter'][0].filename}`,
+        file: files['coverLetter'][0],
+        field: 'coverLetter',
+      },
+      {
+        name: `${filePrefix}/${files['videoResume'][0].filename}`,
+        file: files['videoResume'][0],
+        field: 'videoResume',
+      },
+    ];
 
-    // const promises = fileList.map(async ({ name, field, file }) => {
-    //   const client = await this.azureStorageService.uploadBlob(
-    //     name,
-    //     file.buffer,
-    //   );
+    const promises = fileList.map(async ({ name, field, file }) => {
+      const client = await this.azureStorageService.uploadBlob(
+        name,
+        file.buffer,
+      );
 
-    //   return {
-    //     type: field,
-    //     url: client.url,
-    //   };
-    // });
+      return {
+        type: field,
+        url: client.url,
+      };
+    });
 
-    // const fileUrls = await Promise.all(promises);
-    // candidate.set('files', fileUrls);
-    // await candidate.save();
+    const fileUrls = await Promise.all(promises);
+    candidate.set('files', fileUrls);
+    await candidate.save();
 
-    // this.videoAnalysisService.startVideoProcessing(
-    //   files.videoResume[0].buffer,
-    //   files.videoResume[0].originalname,
-    // );
+    this.videoAnalysisService.startVideoProcessing(
+      files.videoResume[0].buffer,
+      files.videoResume[0].originalname,
+    );
 
     const result = this.applicationSuccessTemplate.render({
       logo: job?.company.logo,

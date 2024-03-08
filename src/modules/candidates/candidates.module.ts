@@ -6,6 +6,11 @@ import { VideoAnalysisService } from './services/video-analysis.service';
 import { StorageModule } from '../storage/storage.module';
 import { CandidateController } from './controllers/candidate.controller';
 import { CandidateService } from './services/candidate.service';
+import {
+  CandidateNote,
+  CandidateNoteSchema,
+} from './schemas/candidate-note.schema';
+import { AdminCandidateController } from './controllers/admin.controller';
 
 @Module({
   imports: [
@@ -14,12 +19,16 @@ import { CandidateService } from './services/candidate.service';
         name: Candidate.name,
         useFactory: () => CandidateSchema,
       },
+      {
+        name: CandidateNote.name,
+        useFactory: () => CandidateNoteSchema,
+      },
     ]),
     HttpModule,
     StorageModule,
   ],
   exports: [MongooseModule, VideoAnalysisService],
   providers: [VideoAnalysisService, CandidateService],
-  controllers: [CandidateController],
+  controllers: [CandidateController, AdminCandidateController],
 })
 export class CandidatesModule {}

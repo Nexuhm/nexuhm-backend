@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JobsService } from '../services/jobs.service';
 import { User } from '@/lib/decorators/user.decorator';
 import { UserDocument } from '@/modules/users/schemas/user.schema';
@@ -12,6 +12,18 @@ import { JobPostingState } from '../types/job-posting-state.enum';
 @UseGuards(JwtAuthGuard)
 export class JobsAdminController {
   constructor(private readonly jobsService: JobsService) {}
+
+  @Get(':id')
+  @ApiOperation({ description: "Get job posting of user's company" })
+  @ApiBearerAuth()
+  getJobById(@User() user: UserDocument, @Param('id') id) {
+    return this.jobsService
+      .findOne({
+        _id: id,
+        company: user.company,
+      })
+      .populate('company', 'slug');
+  }
 
   @Get()
   @ApiOperation({ description: "Get job posting of user's company" })
