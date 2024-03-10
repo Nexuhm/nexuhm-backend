@@ -4,13 +4,25 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug: Nexuhm API",
-      "runtimeExecutable": "yarn",
-      "runtimeArgs": ["run", "start:debug", "--", "--inspect-brk"],
-      "autoAttachChildProcesses": true,
-      "restart": true,
+      "name": "Debug: Core",
+      "runtimeArgs": ["start", "core", "--debug", "--watch"],
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nest",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js", "!**/node_modules/**"],
       "sourceMaps": true,
-      "stopOnEntry": false,
+      "cwd": "${workspaceFolder}",
+      "outputCapture": "std",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug: Background Tasks",
+      "runtimeArgs": ["start", "bg-tasks", "--debug", "--watch"],
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nest",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}",
+      "outputCapture": "std",
       "console": "integratedTerminal"
     }
   ]

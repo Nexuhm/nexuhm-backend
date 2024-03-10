@@ -1,0 +1,131 @@
+import { Injectable } from '@nestjs/common';
+import * as pdfParse from 'pdf-parse';
+import { ChatOpenAI } from '@langchain/openai';
+import { JsonOutputParser } from '@langchain/core/output_parsers';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { InjectModel } from '@nestjs/mongoose';
+import { Candidate } from '../schemas/candidate.schema';
+import { FilterQuery, Model } from 'mongoose';
+import { UserDocument } from '@/core/modules/users/schemas/user.schema';
+import { CandidateNote } from '../schemas/candidate-note.schema';
+
+@Injectable()
+export class CandidateService {
+  constructor(
+    @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
+    @InjectModel(CandidateNote.name) private noteModel: Model<CandidateNote>,
+  ) {}
+
+  find(filters: FilterQuery<Candidate> = {}) {
+    return this.candidateModel.find(filters);
+  }
+
+  count(filters: FilterQuery<Candidate> = {}) {
+    return this.candidateModel.countDocuments(filters);
+  }
+
+  findById(id: string) {
+    return this.candidateModel.findById(id);
+  }
+
+  async createNote(candidateId: string, author: UserDocument, content: string) {
+    const candidate = await this.findById(candidateId);
+
+    const note = await this.noteModel.create({
+      candidate,
+      author,
+      note: content,
+    });
+
+    await candidate?.updateOne({
+      $addToSet: {
+        notes: note,
+      },
+    });
+
+    return {
+      author: note.author
+        ? `${note.author.firstname} ${note.author.lastname}`
+        : 'Nexuhm',
+      note: note.note,
+      createdAt: note.createdAt,
+    };
+  }
+
+  async getNotes(candidateId: string) {
+    const notes = await this.noteModel
+      .find({
+        candidate: candidateId,
+      })
+      .populate('author', 'firstname lastname')
+      .sort('-createdAt');
+
+    return notes.map((note) => ({
+      author: note.author
+        ? `${note.author.firstname} ${note.author.lastname}`
+        : 'Nexuhm',
+      note: note.note,
+      createdAt: note.createdAt,
+    }));
+  }
+
+  async parseResume(file: Buffer) {
+    const pdf = await pdfParse(file);
+    const resumeContent = pdf.text;
+
+    const model = new ChatOpenAI({
+      modelName: 'gpt-3.5-turbo-0125',
+      modelKwargs: {
+        response_format: {
+          type: 'json_object',
+        },
+      },
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const prompt = ChatPromptTemplate.fromMessages([
+      [
+        'system',
+        `
+          You are a resume analyzer. You can parse useful infromation for recruiment process from resumes or CVs.
+
+          REQUIREMENTS:
+          ------------
+          You SHOULD NOT make up any stuff that isn't related to given \`title\` and \`description\`.
+          Only return the JSON fields with values. i.e., DROP all fields with null and "". 
+
+          Step 1: 
+          Parse relevant information based on SCHEMA
+
+          Step 2:
+          Normalize parsed values, i.e. capitalize firstname and lastname, properly format email etc.
+
+          SCHEMA:
+          -------
+          {{
+            firstname: string // email of the candidate,
+            lastname: string // email of the candidate,
+            email: string // email of the candidate,
+            location: string // location of the candidate
+            phone: string // phone number of the candidate
+          }}
+        `,
+      ],
+      [
+        'user',
+        `
+        RESUME:
+        -----
+
+        {resumeContent}
+      `,
+      ],
+    ]);
+
+    const chain = prompt.pipe(model).pipe(new JsonOutputParser());
+
+    const result = await chain.invoke({ resumeContent });
+
+    return result;
+  }
+}
