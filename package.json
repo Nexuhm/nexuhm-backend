@@ -9,6 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
+    "start:core": "nest start core",
     "dev:core": "nest start --watch core",
     "dev:bg-tasks": "nest start --watch bg-tasks",
     "start:dev": "nest start --watch",
