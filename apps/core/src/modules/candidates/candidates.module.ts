@@ -11,6 +11,7 @@ import {
   CandidateNoteSchema,
 } from './schemas/candidate-note.schema';
 import { AdminCandidateController } from './controllers/admin.controller';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AdminCandidateController } from './controllers/admin.controller';
         useFactory: () => CandidateNoteSchema,
       },
     ]),
+    UsersModule,
     HttpModule,
     StorageModule,
   ],

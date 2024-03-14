@@ -4,7 +4,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { InjectModel } from '@nestjs/mongoose';
-import { Candidate } from '../schemas/candidate.schema';
+import { Candidate, RecruitmentStage } from '../schemas/candidate.schema';
 import { FilterQuery, Model } from 'mongoose';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { CandidateNote } from '../schemas/candidate-note.schema';
@@ -127,5 +127,19 @@ export class CandidateService {
     const result = await chain.invoke({ resumeContent });
 
     return result;
+  }
+
+  async rejectCandidate(candidateId: string) {
+    const candidate = await this.candidateModel.findByIdAndUpdate(
+      candidateId,
+      {
+        stage: RecruitmentStage.Rejected,
+      },
+      {
+        new: true,
+      },
+    );
+
+    return candidate;
   }
 }

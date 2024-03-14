@@ -13,7 +13,21 @@ export interface CandidateExperience {
   end: string;
 }
 
-@Schema({ timestamps: true })
+export enum RecruitmentStage {
+  Applied = 'applied',
+  Interview = 'interview',
+  Awaiting = 'awaiting',
+  Offer = 'offer',
+  Hired = 'hired',
+  Rejected = 'rejected',
+}
+
+@Schema({
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+  },
+})
 export class Candidate {
   _id: mongoose.Schema.Types.ObjectId;
 
@@ -28,6 +42,19 @@ export class Candidate {
 
   @Prop()
   phone: string;
+
+  @Prop({
+    type: String,
+    enum: [
+      RecruitmentStage.Applied,
+      RecruitmentStage.Awaiting,
+      RecruitmentStage.Hired,
+      RecruitmentStage.Interview,
+      RecruitmentStage.Offer,
+      RecruitmentStage.Rejected,
+    ],
+  })
+  stage: RecruitmentStage;
 
   @Prop()
   location: string;

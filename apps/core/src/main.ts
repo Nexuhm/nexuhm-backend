@@ -21,6 +21,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       /^http:\/\/localhost(:\d+)?$/,
+      /^https:\/\/[a-z0-9.-]+\.nexuhm-local\.com$/,
       /^https:\/\/[a-z0-9.-]+\.nexuhm\.com$/,
     ],
     credentials: true,

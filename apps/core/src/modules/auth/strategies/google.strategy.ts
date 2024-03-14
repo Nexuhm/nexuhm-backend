@@ -13,6 +13,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       scope: ['email', 'profile', 'https://www.googleapis.com/auth/calendar'],
     });
   }
+
   async validate(
     accessToken: string,
     refreshToken: string,
