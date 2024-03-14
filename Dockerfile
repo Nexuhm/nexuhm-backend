@@ -30,4 +30,4 @@ COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production --ignore-engines
 
 # Define the command to run your NestJS application
-CMD ["yarn", "start:core"]
+CMD ["node", "dist/apps/main.js"]
