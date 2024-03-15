@@ -5,6 +5,7 @@ import { User, UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { UserIntegration } from '../schemas/user-integration.schema';
 import { CompanyService } from '@/core/modules/company/services/company.service';
 import { toPossessive } from '@/core/lib/utils';
+import { generateSlug } from 'random-word-slugs';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +26,7 @@ export class UsersService {
       fields.company ??
       (await this.companyService.create({
         name: `${toPossessive(fields.firstname)} company`,
+        slug: generateSlug(2, { format: 'kebab' }),
       }));
 
     return this.userModel.create({ ...fields, company });
