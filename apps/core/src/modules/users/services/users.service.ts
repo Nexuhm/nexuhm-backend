@@ -51,8 +51,10 @@ export class UsersService {
     integration: Omit<UserIntegration, '_id'>,
   ) {
     const existing = await this.integrationModel.findOne({
-      user,
-      type: integration.type,
+      _id: {
+        $in: user.integrations,
+      },
+      type: integration.type
     });
 
     // update existing integration
