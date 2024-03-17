@@ -12,7 +12,12 @@ import {
   RecruitmentStage,
 } from '../schemas/candidate.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
-import { FeedbackOptions, OfferOptions, ScheduleMeetingOptions } from '../candidate.inerface';
+import {
+  FeedbackOptions,
+  HireOptions,
+  OfferOptions,
+  ScheduleMeetingOptions,
+} from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 
 @Injectable()
@@ -179,7 +184,7 @@ export class CandidateHiringService {
       candidate: candidateId,
       stage: RecruitmentStage.Interview,
     });
-    
+
     if (!isInInterviewStage) {
       throw new BadRequestException('Candidate not in interview stage');
     }
@@ -205,6 +210,23 @@ export class CandidateHiringService {
       candidate: candidateId,
       stage: RecruitmentStage.Offer,
       data: offer,
+    });
+  }
+
+  async hire(candidateId: string, hireData: HireOptions) {
+    const isInOfferStage = await this.candidateStageModel.exists({
+      candidate: candidateId,
+      stage: RecruitmentStage.Offer,
+    });
+
+    if (!isInOfferStage) {
+      throw new BadRequestException('Candidate not in offer stage');
+    }
+
+    await this.candidateStageModel.create({
+      candidate: candidateId,
+      stage: RecruitmentStage.Hired,
+      data: hireData,
     });
   }
 }

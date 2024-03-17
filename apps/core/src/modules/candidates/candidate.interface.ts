@@ -26,3 +26,9 @@ export interface OfferOptions {
   salary: string;
   benefits: string;
 }
+
+export interface HireOptions {
+  positionTitle: string;
+  startDate: Date;
+  salary: string;
+}
