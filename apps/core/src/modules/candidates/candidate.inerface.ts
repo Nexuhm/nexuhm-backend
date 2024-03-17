@@ -19,3 +19,10 @@ export interface FeedbackOptions {
   fitForTheRole: RoleCompatibility;
   recommendation: FeedbackRecommendation;
 }
+
+export interface OfferOptions {
+  title: string;
+  startDate: Date;
+  salary: string;
+  benefits: string;
+}

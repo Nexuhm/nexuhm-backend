@@ -21,6 +21,8 @@ import {
   CandidateScheduleMeetingDto,
   CandidateScheduleMeetingParamsDto,
   GetCandidatesListQueryDto,
+  MakeOfferOptionsDto,
+  MakeOfferParamsDto,
   SetFeedbackOptionsDto,
   SetFeedbackParamsDto,
 } from '../candidate.dto';
@@ -146,5 +148,23 @@ export class AdminCandidateController {
     @Body() feedback: SetFeedbackOptionsDto,
   ) {
     await this.candidateHiringService.setFeedback(candidateId, feedback);
+  }
+
+  @Post('/:id/offer')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Not allowed for action, invalid stage',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation error',
+  })
+  @HttpCode(HttpStatus.OK)
+  async makeOffer(@Param() { id: candidateId }: MakeOfferParamsDto, @Body() offer: MakeOfferOptionsDto) {
+    await this.candidateHiringService.makeOffer(candidateId, offer);
   }
 }

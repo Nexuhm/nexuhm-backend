@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { RecruitmentStage } from './candidate.schema';
-import { FeedbackOptions } from '../candidate.inerface';
+import { FeedbackOptions, OfferOptions } from '../candidate.inerface';
 
 @Schema({ timestamps: true })
 export class CandidateStage {
@@ -18,7 +18,7 @@ export class CandidateStage {
   candidate: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true, type: mongoose.Schema.Types.Mixed })
-  data: FeedbackOptions;
+  data: FeedbackOptions | OfferOptions;
 
   @Prop()
   createdAt: Date;

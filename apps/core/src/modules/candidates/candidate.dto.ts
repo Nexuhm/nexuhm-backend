@@ -7,9 +7,10 @@ import {
   ArrayMinSize,
   IsTimeZone,
   IsEnum,
+  IsNumber,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { FeedbackOptions, ScheduleMeetingOptions } from './candidate.inerface';
+import { FeedbackOptions, OfferOptions, ScheduleMeetingOptions } from './candidate.inerface';
 import {
   RoleCompatibility,
   FeedbackImpression,
@@ -60,6 +61,30 @@ export class SetFeedbackOptionsDto implements FeedbackOptions {
     enumName: 'FeedbackRecommendation',
   })
   recommendation: FeedbackRecommendation;
+}
+
+export class MakeOfferParamsDto {
+  @IsString()
+  @ApiProperty()
+  id: string;
+}
+
+export class MakeOfferOptionsDto implements OfferOptions {
+  @IsString()
+  @ApiProperty()
+  title: string;
+
+  @IsDate()
+  @ApiProperty()
+  startDate: Date;
+
+  @IsString()
+  @ApiProperty()
+  salary: string;
+
+  @IsString()
+  @ApiProperty()
+  benefits: string;
 }
 
 export class CandidateScheduleMeetingDto implements ScheduleMeetingOptions {
