@@ -25,6 +25,8 @@ import {
   CreateOfferParamsDto,
   SetFeedbackOptionsDto,
   SetFeedbackParamsDto,
+  HireParamsDto,
+  HireOptionsDto,
 } from '../candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
 import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
@@ -166,5 +168,23 @@ export class AdminCandidateController {
   @HttpCode(HttpStatus.OK)
   async createOffer(@Param() { id: candidateId }: CreateOfferParamsDto, @Body() offer: CreateOfferOptionsDto) {
     await this.candidateHiringService.createOffer(candidateId, offer);
+  }
+
+  @Post('/:id/hire')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Not allowed for action, invalid stage',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation error',
+  })
+  @HttpCode(HttpStatus.OK)
+  async hire(@Param() { id: candidateId }: HireParamsDto, @Body() hireData: HireOptionsDto) {
+    await this.candidateHiringService.hire(candidateId, hireData);
   }
 }
