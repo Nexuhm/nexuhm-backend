@@ -38,17 +38,17 @@ export class CandidateHiringService {
     const microsoftIntegration = integrations.find(integration => integration.type == 'microsoft');
 
     if (googleIntegration) {
-      return await this.scheduleMeetingGoogle(googleIntegration.accessToken, candidate, schedule);
+      return await this.createGoogleCalendarEvent(googleIntegration.accessToken, candidate, schedule);
     }
     
     if (microsoftIntegration) {
-      return await this.scheduleMeetingMicrosoft(microsoftIntegration.accessToken, candidate, schedule);
+      return await this.createMicrosoftOutlookEvent(microsoftIntegration.accessToken, candidate, schedule);
     }
 
     throw new MissingIntegrationException('Missing google and microsoft integration');
   }
 
-  private async scheduleMeetingMicrosoft(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
+  private async createMicrosoftOutlookEvent(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
     const client = Client.init({
       authProvider: (done) => {
         done(null, token);
@@ -89,7 +89,7 @@ export class CandidateHiringService {
     await client.api('/me/events').post(meetingEvent);
   }
 
-  private async scheduleMeetingGoogle(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
+  private async createGoogleCalendarEvent(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
     const oAuth2Client = new google.auth.OAuth2();
 
     oAuth2Client.setCredentials({
