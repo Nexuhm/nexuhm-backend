@@ -11,7 +11,7 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FeedbackOptions, ScheduleMeetingOptions } from './candidate.inerface';
 import {
-  FeedbackFitForRole,
+  RoleCompatibility,
   FeedbackImpression,
   FeedbackRecommendation,
 } from './candidate.enum';
@@ -47,12 +47,12 @@ export class SetFeedbackOptionsDto implements FeedbackOptions {
   @ApiProperty()
   strengthsAndWeaknesses: string;
 
-  @IsEnum(FeedbackFitForRole)
+  @IsEnum(RoleCompatibility)
   @ApiProperty({
-    enum: FeedbackFitForRole,
-    enumName: 'FeedbackFitForRole',
+    enum: RoleCompatibility,
+    enumName: 'RoleCompatibility',
   })
-  fitForTheRole: FeedbackFitForRole;
+  fitForTheRole: RoleCompatibility;
 
   @IsEnum(FeedbackRecommendation)
   @ApiProperty({

@@ -1,5 +1,5 @@
 import {
-  FeedbackFitForRole,
+  RoleCompatibility,
   FeedbackImpression,
   FeedbackRecommendation,
 } from './candidate.enum';
@@ -16,6 +16,6 @@ export interface ScheduleMeetingOptions {
 export interface FeedbackOptions {
   impression: FeedbackImpression;
   strengthsAndWeaknesses: string;
-  fitForTheRole: FeedbackFitForRole;
+  fitForTheRole: RoleCompatibility;
   recommendation: FeedbackRecommendation;
 }

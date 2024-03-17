@@ -175,13 +175,14 @@ export class CandidateHiringService {
   }
 
   async setFeedback(candidateId: string, feedback: FeedbackOptions) {
-    const isInInterviewStage = await this.candidateStageModel.findOne({
+    const isInInterviewStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Interview,
     });
 
-    if (!isInInterviewStage)
+    if (!isInInterviewStage) {
       throw new BadRequestException('Candidate not in interview stage');
+    }
 
     await this.candidateStageModel.create({
       candidate: candidateId,

@@ -1,17 +1,17 @@
 export enum FeedbackImpression {
-  POSITIVE = 'Positive',
-  NEUTRAL = 'Neutral',
-  NEGATIVE = 'Negative',
+  Positive = 'positive',
+  Neutral = 'neutral',
+  Negative = 'negative',
 }
 
-export enum FeedbackFitForRole {
-  GOOD_FIT = 'Good-Fit',
-  UNSURE = 'Unsure',
-  NOT_FIT = 'Not-A-Fit',
+export enum RoleCompatibility {
+  GoodFit = 'good-fit',
+  Unsure = 'unsure',
+  NotFit = 'not-fit',
 }
 
 export enum FeedbackRecommendation {
-  MOVE_TO_NEXT_STEP = 'Move-To-Next-Step',
-  NEED_MORE_INFORMATION = 'Need-More-Information',
-  REJECT = 'Reject',
+  MoveToNextStep = 'move-to-next-step',
+  NeedMoreInfo = 'need-more-information',
+  Reject = 'reject',
 }
