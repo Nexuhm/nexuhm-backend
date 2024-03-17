@@ -53,9 +53,8 @@ export class JobsAdminController {
   })
   @ApiBearerAuth()
   generateJobPosting(
-    @User() user: UserDocument,
     @Body() body: JobGenerationDto,
   ) {
-    return this.jobsService.generateJobPosting(body, user);
+    return this.jobsService.generateJobPosting(body);
   }
 }

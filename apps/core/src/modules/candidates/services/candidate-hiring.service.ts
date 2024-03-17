@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserIntegration } from '../../users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
@@ -7,15 +7,18 @@ import { UserDocument } from '../../users/schemas/user.schema';
 import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
-import { CandidateDocument } from '../schemas/candidate.schema';
+import { CandidateDocument, RecruitmentStage } from '../schemas/candidate.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
-import { ScheduleMeetingOptions } from '../candidate.inerface';
+import { FeedbackOptions, ScheduleMeetingOptions } from '../candidate.inerface';
+import { CandidateStage } from '../schemas/candidate-stage.schema';
 
 @Injectable()
 export class CandidateHiringService {
   constructor(
     @InjectModel(UserIntegration.name)
     private integrationModel: Model<UserIntegration>,
+    @InjectModel(CandidateStage.name)
+    private readonly candidateStageModel: Model<CandidateStage>,
     private readonly candidateService: CandidateService,
   ) {}
 
@@ -166,5 +169,20 @@ export class CandidateHiringService {
         responseType: 'json',
       },
     );
+  }
+
+  async setFeedback(candidateId: string, feedback: FeedbackOptions) {
+    const isInInterviewStage = await this.candidateStageModel.findOne({
+      candidate: candidateId,
+      stage: RecruitmentStage.Interview
+    });
+
+    if (!isInInterviewStage) throw new BadRequestException('Candidate not in interview stage');
+
+    await this.candidateStageModel.create({
+      candidate: candidateId,
+      stage: RecruitmentStage.Awaiting,
+      data: feedback,
+    });
   }
 }

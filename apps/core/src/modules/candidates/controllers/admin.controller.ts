@@ -24,20 +24,21 @@ import {
   CandidateScheduleMeetingDto,
   CandidateScheduleMeetingParamsDto,
   GetCandidatesListQueryDto,
+  SetFeedbackOptionsDto,
+  SetFeedbackParamsDto,
 } from '../candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
 import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 import { ApiResponse } from '@nestjs/swagger';
 import { addMinutes } from 'date-fns';
+import { FeedbackFitForRole, FeedbackImpression, FeedbackRecommendation } from '../candidate.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/admin/candidates')
 export class AdminCandidateController {
   constructor(
     private candidateSevrice: CandidateService,
-    @InjectModel(UserIntegration.name)
-    private integrationModel: Model<UserIntegration>,
     private candidateHiringService: CandidateHiringService,
   ) {}
 
@@ -128,5 +129,23 @@ export class AdminCandidateController {
 
       throw e;
     }
+  }
+
+  @Post('/:id/feedback')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Feedback saved successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Not allowed for action, invalid stage',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation error',
+  })
+  @HttpCode(HttpStatus.OK)
+  async setFeedback(@Param() { id: candidateId }: SetFeedbackParamsDto, @Body() feedback: SetFeedbackOptionsDto) {
+    await this.candidateHiringService.setFeedback(candidateId, feedback);
   }
 }
