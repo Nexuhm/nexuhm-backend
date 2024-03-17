@@ -1,4 +1,4 @@
-export interface ICandidateScheduleMeeting {
+export interface ScheduleMeetingOptions {
   startDate: Date;
   endDate: Date;
   timezone: string;

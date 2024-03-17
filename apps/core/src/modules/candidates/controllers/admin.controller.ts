@@ -23,10 +23,10 @@ import { UserDocument } from '../../users/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserIntegration } from '../../users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
-import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { PaginationDto } from '../../../lib/common/dto/pagination.dto';
 import { CandidateScheduleMeetingDto, CandidateScheduleMeetingParamsDto, GetCandidatesListQueryDto } from '../candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
-import { MissingIntegrationException } from '../../../common/exception/missing-integration.exception';
+import { MissingIntegrationException } from '../../../lib/common/exception/missing-integration.exception';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 import { ApiResponse } from '@nestjs/swagger';
 import { addMinutes } from 'date-fns';
@@ -109,7 +109,7 @@ export class AdminCandidateController {
     try {
       await this.candidateHiringService.scheduleMeetingWithCandidate(user, candidateId, {
         ...schedule,
-        endDate: schedule.endDate || addMinutes(schedule.startDate, 30)
+        endDate: schedule.endDate || addMinutes(schedule.endDate, 30)
       });
     } catch (e) {
       if (e instanceof MissingIntegrationException) throw new BadRequestException(e.message);

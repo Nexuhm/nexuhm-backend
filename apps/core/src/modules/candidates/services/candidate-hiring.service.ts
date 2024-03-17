@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
-import { ICandidateScheduleMeeting } from "../candidate.inerface";
 import { InjectModel } from "@nestjs/mongoose";
 import { UserIntegration } from "../../users/schemas/user-integration.schema";
 import { Model } from "mongoose";
 import { CandidateService } from "./candidate.service";
 import { UserDocument } from "../../users/schemas/user.schema";
-import { MissingIntegrationException } from "../../../common/exception/missing-integration.exception";
+import { MissingIntegrationException } from "../../../lib/common/exception/missing-integration.exception";
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { CandidateDocument } from "../schemas/candidate.schema";
 import { CandidateNotFoundException } from "../exception/candidate-not-found.exception";
+import { ScheduleMeetingOptions } from "../candidate.inerface";
 
 @Injectable()
 export class CandidateHiringService {
@@ -18,7 +18,7 @@ export class CandidateHiringService {
     private readonly candidateService: CandidateService,
   ) {}
 
-  async scheduleMeetingWithCandidate(user: UserDocument, candidateId: string, schedule: ICandidateScheduleMeeting) {
+  async scheduleMeetingWithCandidate(user: UserDocument, candidateId: string, schedule: ScheduleMeetingOptions) {
     console.log('schedule => ', schedule)
     const candidate = await this.candidateService.findById(candidateId);
 
@@ -38,17 +38,19 @@ export class CandidateHiringService {
     const microsoftIntegration = integrations.find(integration => integration.type == 'microsoft');
 
     if (googleIntegration) {
-      await this.scheduleMeetingGoogle(googleIntegration.accessToken, candidate, schedule)
+      await this.scheduleMeetingGoogle(googleIntegration.accessToken, candidate, schedule);
+      return;
     }
-    else if (microsoftIntegration) {
-      await this.scheduleMeetingMicrosoft(microsoftIntegration.accessToken, candidate, schedule)
+    
+    if (microsoftIntegration) {
+      await this.scheduleMeetingMicrosoft(microsoftIntegration.accessToken, candidate, schedule);
+      return;
     }
-    else {
-      throw new MissingIntegrationException('Missing google and microsoft integration');
-    }
+
+    throw new MissingIntegrationException('Missing google and microsoft integration');
   }
 
-  private async scheduleMeetingMicrosoft(token: string, candidate: CandidateDocument, schedule: ICandidateScheduleMeeting) {
+  private async scheduleMeetingMicrosoft(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
     const client = Client.init({
       authProvider: (done) => {
         done(null, token);
@@ -89,7 +91,7 @@ export class CandidateHiringService {
     await client.api('/me/events').post(meetingEvent);
   }
 
-  private async scheduleMeetingGoogle(token: string, candidate: CandidateDocument, schedule: ICandidateScheduleMeeting) {
+  private async scheduleMeetingGoogle(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
     const oAuth2Client = new google.auth.OAuth2();
 
     oAuth2Client.setCredentials({

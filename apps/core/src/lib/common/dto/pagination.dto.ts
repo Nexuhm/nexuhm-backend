@@ -1,8 +1,8 @@
-import { IPagination } from "../interface/pagination.interface";
+import { PaginationOptions } from "../interface/pagination.interface";
 import { IsInt, Max, IsOptional, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class PaginationDto implements IPagination {
+export class PaginationDto implements PaginationOptions {
   @IsInt()
   @Max(50)
   @IsOptional()

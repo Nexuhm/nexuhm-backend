@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsDate, IsEmail, IsArray, ArrayMinSize, IsTimeZone } from 'class-validator'
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ICandidateScheduleMeeting } from './candidate.inerface';
+import { ScheduleMeetingOptions } from './candidate.inerface';
 import { addMinutes } from 'date-fns';
 
 export class GetCandidatesListQueryDto {
@@ -17,7 +17,7 @@ export class CandidateScheduleMeetingParamsDto {
   id: string;
 }
 
-export class CandidateScheduleMeetingDto implements ICandidateScheduleMeeting {
+export class CandidateScheduleMeetingDto implements ScheduleMeetingOptions {
   @IsDate()
   @ApiProperty()
   startDate: Date;
