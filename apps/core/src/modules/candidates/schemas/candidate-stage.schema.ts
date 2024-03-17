@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { RecruitmentStage } from './candidate.schema';
-import { FeedbackOptions, HireOptions, OfferOptions } from '../candidate.interface';
+import {
+  FeedbackOptions,
+  HireOptions,
+  OfferOptions,
+} from '../candidate.interface';
 
 @Schema({ timestamps: true })
 export class CandidateStage {

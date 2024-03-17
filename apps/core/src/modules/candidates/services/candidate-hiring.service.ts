@@ -12,7 +12,12 @@ import {
   RecruitmentStage,
 } from '../schemas/candidate.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
-import { FeedbackOptions, HireOptions, OfferOptions, ScheduleMeetingOptions } from '../candidate.interface';
+import {
+  FeedbackOptions,
+  HireOptions,
+  OfferOptions,
+  ScheduleMeetingOptions,
+} from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 
 @Injectable()
@@ -179,7 +184,7 @@ export class CandidateHiringService {
       candidate: candidateId,
       stage: RecruitmentStage.Interview,
     });
-    
+
     if (!isInInterviewStage) {
       throw new BadRequestException('Candidate not in interview stage');
     }

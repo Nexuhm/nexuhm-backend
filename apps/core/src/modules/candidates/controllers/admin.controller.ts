@@ -166,7 +166,10 @@ export class AdminCandidateController {
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async createOffer(@Param() { id: candidateId }: CreateOfferParamsDto, @Body() offer: CreateOfferOptionsDto) {
+  async createOffer(
+    @Param() { id: candidateId }: CreateOfferParamsDto,
+    @Body() offer: CreateOfferOptionsDto,
+  ) {
     await this.candidateHiringService.createOffer(candidateId, offer);
   }
 
@@ -184,7 +187,10 @@ export class AdminCandidateController {
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async hire(@Param() { id: candidateId }: HireParamsDto, @Body() hireData: HireOptionsDto) {
+  async hire(
+    @Param() { id: candidateId }: HireParamsDto,
+    @Body() hireData: HireOptionsDto,
+  ) {
     await this.candidateHiringService.hire(candidateId, hireData);
   }
 }

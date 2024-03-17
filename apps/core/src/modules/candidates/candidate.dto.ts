@@ -7,10 +7,14 @@ import {
   ArrayMinSize,
   IsTimeZone,
   IsEnum,
-  IsNumber,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { FeedbackOptions, HireOptions, OfferOptions, ScheduleMeetingOptions } from './candidate.interface';
+import {
+  FeedbackOptions,
+  HireOptions,
+  OfferOptions,
+  ScheduleMeetingOptions,
+} from './candidate.interface';
 import {
   RoleCompatibility,
   FeedbackImpression,
