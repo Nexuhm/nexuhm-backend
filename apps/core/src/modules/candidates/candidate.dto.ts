@@ -10,7 +10,7 @@ import {
   IsNumber,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { FeedbackOptions, OfferOptions, ScheduleMeetingOptions } from './candidate.inerface';
+import { FeedbackOptions, OfferOptions, InterviewOptions } from './candidate.inerface';
 import {
   RoleCompatibility,
   FeedbackImpression,
@@ -87,7 +87,7 @@ export class CreateOfferOptionsDto implements OfferOptions {
   benefits: string;
 }
 
-export class CandidateScheduleMeetingDto implements ScheduleMeetingOptions {
+export class InterviewOptionsDto implements InterviewOptions {
   @IsDate()
   @ApiProperty()
   startDate: Date;
@@ -118,4 +118,10 @@ export class CandidateScheduleMeetingDto implements ScheduleMeetingOptions {
   @IsString()
   @ApiPropertyOptional()
   message?: string;
+}
+
+export class RejectParamsDto {
+  @IsString()
+  @ApiProperty()
+  id: string;
 }

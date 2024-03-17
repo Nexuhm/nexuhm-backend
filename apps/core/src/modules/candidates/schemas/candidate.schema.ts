@@ -14,12 +14,12 @@ export interface CandidateExperience {
 }
 
 export enum RecruitmentStage {
-  Applied = 'applied',
-  Interview = 'interview',
-  Awaiting = 'awaiting',
-  Offer = 'offer',
-  Hired = 'hired',
-  Rejected = 'rejected',
+  Applied = 'applied',//---
+  Interview = 'interview',//+++
+  Awaiting = 'awaiting',///+++
+  Offer = 'offer',//+++
+  Hired = 'hired',//---
+  Rejected = 'rejected',//+++
 }
 
 @Schema({

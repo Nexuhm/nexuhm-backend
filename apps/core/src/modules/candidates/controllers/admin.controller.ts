@@ -18,13 +18,14 @@ import { User } from '@/core/lib/decorators/user.decorator';
 import { UserDocument } from '../../users/schemas/user.schema';
 import { PaginationDto } from '../../../lib/dto/pagination.dto';
 import {
-  CandidateScheduleMeetingDto,
+  InterviewOptionsDto,
   CandidateScheduleMeetingParamsDto,
   GetCandidatesListQueryDto,
   CreateOfferOptionsDto,
   CreateOfferParamsDto,
   SetFeedbackOptionsDto,
   SetFeedbackParamsDto,
+  RejectParamsDto,
 } from '../candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
 import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
@@ -82,8 +83,9 @@ export class AdminCandidateController {
   }
 
   @Post('/:id/reject')
-  async rejectCandidate(@Param('id') candidateId) {
-    return this.candidateSevrice.rejectCandidate(candidateId);
+  @HttpCode(HttpStatus.OK)
+  async rejectCandidate(@Param() { id: candidateId }: RejectParamsDto ) {
+    await this.candidateHiringService.reject(candidateId);
   }
 
   @Post('/:id/schedule')
@@ -97,7 +99,7 @@ export class AdminCandidateController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Integration with google or microsoft does not exist',
+    description: 'Integration with google/microsoft does not exist or candidate stage does not allow action',
   })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -107,15 +109,15 @@ export class AdminCandidateController {
   async scheduleMeeting(
     @Param() { id: candidateId }: CandidateScheduleMeetingParamsDto,
     @User() user: UserDocument,
-    @Body() schedule: CandidateScheduleMeetingDto,
+    @Body() interview: InterviewOptionsDto,
   ) {
     try {
       await this.candidateHiringService.scheduleMeetingWithCandidate(
         user,
         candidateId,
         {
-          ...schedule,
-          endDate: schedule.endDate || addMinutes(schedule.endDate, 30),
+          ...interview,
+          endDate: interview.endDate || addMinutes(interview.endDate, 30),
         },
       );
     } catch (e) {

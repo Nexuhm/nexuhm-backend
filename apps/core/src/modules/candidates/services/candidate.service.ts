@@ -128,18 +128,4 @@ export class CandidateService {
 
     return result;
   }
-
-  async rejectCandidate(candidateId: string) {
-    const candidate = await this.candidateModel.findByIdAndUpdate(
-      candidateId,
-      {
-        stage: RecruitmentStage.Rejected,
-      },
-      {
-        new: true,
-      },
-    );
-
-    return candidate;
-  }
 }
