@@ -1,3 +1,9 @@
+import {
+  RoleCompatibility,
+  FeedbackImpression,
+  FeedbackRecommendation,
+} from './candidate.enum';
+
 export interface ScheduleMeetingOptions {
   startDate: Date;
   endDate: Date;
@@ -5,4 +11,11 @@ export interface ScheduleMeetingOptions {
   interviewers: Array<string>;
   location?: string;
   message?: string;
+}
+
+export interface FeedbackOptions {
+  impression: FeedbackImpression;
+  strengthsAndWeaknesses: string;
+  fitForTheRole: RoleCompatibility;
+  recommendation: FeedbackRecommendation;
 }

@@ -52,10 +52,7 @@ export class JobsAdminController {
     description: 'Generate job posting based on given title and description',
   })
   @ApiBearerAuth()
-  generateJobPosting(
-    @User() user: UserDocument,
-    @Body() body: JobGenerationDto,
-  ) {
-    return this.jobsService.generateJobPosting(body, user);
+  generateJobPosting(@Body() body: JobGenerationDto) {
+    return this.jobsService.generateJobPosting(body);
   }
 }
