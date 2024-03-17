@@ -38,13 +38,11 @@ export class CandidateHiringService {
     const microsoftIntegration = integrations.find(integration => integration.type == 'microsoft');
 
     if (googleIntegration) {
-      await this.scheduleMeetingGoogle(googleIntegration.accessToken, candidate, schedule);
-      return;
+      return await this.scheduleMeetingGoogle(googleIntegration.accessToken, candidate, schedule);
     }
     
     if (microsoftIntegration) {
-      await this.scheduleMeetingMicrosoft(microsoftIntegration.accessToken, candidate, schedule);
-      return;
+      return await this.scheduleMeetingMicrosoft(microsoftIntegration.accessToken, candidate, schedule);
     }
 
     throw new MissingIntegrationException('Missing google and microsoft integration');
