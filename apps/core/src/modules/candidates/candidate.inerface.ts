@@ -21,7 +21,7 @@ export interface FeedbackOptions {
 }
 
 export interface OfferOptions {
-  title: string;
+  positionTitle: string;
   startDate: Date;
   salary: string;
   benefits: string;

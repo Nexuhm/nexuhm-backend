@@ -72,7 +72,7 @@ export class MakeOfferParamsDto {
 export class MakeOfferOptionsDto implements OfferOptions {
   @IsString()
   @ApiProperty()
-  title: string;
+  positionTitle: string;
 
   @IsDate()
   @ApiProperty()
