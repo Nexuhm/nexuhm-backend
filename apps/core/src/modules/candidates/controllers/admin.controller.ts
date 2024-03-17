@@ -16,9 +16,6 @@ import { CreateCandidateNoteDto } from '../dto/create-candidtae-note.dto';
 import { JwtAuthGuard } from '@/core/modules/auth/guards/jwt.guard';
 import { User } from '@/core/lib/decorators/user.decorator';
 import { UserDocument } from '../../users/schemas/user.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { UserIntegration } from '../../users/schemas/user-integration.schema';
-import { Model } from 'mongoose';
 import { PaginationDto } from '../../../lib/dto/pagination.dto';
 import {
   CandidateScheduleMeetingDto,
@@ -32,7 +29,6 @@ import { MissingIntegrationException } from '../../../lib/exception/missing-inte
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 import { ApiResponse } from '@nestjs/swagger';
 import { addMinutes } from 'date-fns';
-import { FeedbackFitForRole, FeedbackImpression, FeedbackRecommendation } from '../candidate.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('/admin/candidates')
@@ -145,7 +141,10 @@ export class AdminCandidateController {
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async setFeedback(@Param() { id: candidateId }: SetFeedbackParamsDto, @Body() feedback: SetFeedbackOptionsDto) {
+  async setFeedback(
+    @Param() { id: candidateId }: SetFeedbackParamsDto,
+    @Body() feedback: SetFeedbackOptionsDto,
+  ) {
     await this.candidateHiringService.setFeedback(candidateId, feedback);
   }
 }

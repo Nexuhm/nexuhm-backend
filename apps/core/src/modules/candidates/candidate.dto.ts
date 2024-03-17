@@ -10,7 +10,11 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FeedbackOptions, ScheduleMeetingOptions } from './candidate.inerface';
-import { FeedbackFitForRole, FeedbackImpression, FeedbackRecommendation } from './candidate.enum';
+import {
+  FeedbackFitForRole,
+  FeedbackImpression,
+  FeedbackRecommendation,
+} from './candidate.enum';
 
 export class GetCandidatesListQueryDto {
   @IsOptional()
@@ -35,7 +39,7 @@ export class SetFeedbackOptionsDto implements FeedbackOptions {
   @IsEnum(FeedbackImpression)
   @ApiProperty({
     enum: FeedbackImpression,
-    enumName: 'FeedbackImpression'
+    enumName: 'FeedbackImpression',
   })
   impression: FeedbackImpression;
 
@@ -53,7 +57,7 @@ export class SetFeedbackOptionsDto implements FeedbackOptions {
   @IsEnum(FeedbackRecommendation)
   @ApiProperty({
     enum: FeedbackRecommendation,
-    enumName: 'FeedbackRecommendation'
+    enumName: 'FeedbackRecommendation',
   })
   recommendation: FeedbackRecommendation;
 }

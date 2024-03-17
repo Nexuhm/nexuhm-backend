@@ -1,4 +1,8 @@
-import { FeedbackFitForRole, FeedbackImpression, FeedbackRecommendation } from "./candidate.enum";
+import {
+  FeedbackFitForRole,
+  FeedbackImpression,
+  FeedbackRecommendation,
+} from './candidate.enum';
 
 export interface ScheduleMeetingOptions {
   startDate: Date;

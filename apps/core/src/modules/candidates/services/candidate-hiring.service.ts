@@ -7,7 +7,10 @@ import { UserDocument } from '../../users/schemas/user.schema';
 import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
-import { CandidateDocument, RecruitmentStage } from '../schemas/candidate.schema';
+import {
+  CandidateDocument,
+  RecruitmentStage,
+} from '../schemas/candidate.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 import { FeedbackOptions, ScheduleMeetingOptions } from '../candidate.inerface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
@@ -174,10 +177,11 @@ export class CandidateHiringService {
   async setFeedback(candidateId: string, feedback: FeedbackOptions) {
     const isInInterviewStage = await this.candidateStageModel.findOne({
       candidate: candidateId,
-      stage: RecruitmentStage.Interview
+      stage: RecruitmentStage.Interview,
     });
 
-    if (!isInInterviewStage) throw new BadRequestException('Candidate not in interview stage');
+    if (!isInInterviewStage)
+      throw new BadRequestException('Candidate not in interview stage');
 
     await this.candidateStageModel.create({
       candidate: candidateId,

@@ -13,7 +13,10 @@ import {
 import { AdminCandidateController } from './controllers/admin.controller';
 import { UsersModule } from '../users/users.module';
 import { CandidateHiringService } from './services/candidate-hiring.service';
-import { CandidateStage, CandidateStageSchema } from './schemas/candidate-stage.schema';
+import {
+  CandidateStage,
+  CandidateStageSchema,
+} from './schemas/candidate-stage.schema';
 
 @Module({
   imports: [
@@ -29,7 +32,7 @@ import { CandidateStage, CandidateStageSchema } from './schemas/candidate-stage.
       {
         name: CandidateStage.name,
         useFactory: () => CandidateStageSchema,
-      }
+      },
     ]),
     UsersModule,
     HttpModule,

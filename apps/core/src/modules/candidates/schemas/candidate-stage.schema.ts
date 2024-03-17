@@ -1,7 +1,7 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { CandidateSchema, RecruitmentStage } from "./candidate.schema";
-import { FeedbackOptions } from "../candidate.inerface";
+import { RecruitmentStage } from './candidate.schema';
+import { FeedbackOptions } from '../candidate.inerface';
 
 @Schema({ timestamps: true })
 export class CandidateStage {
@@ -10,7 +10,11 @@ export class CandidateStage {
   @Prop({ required: true, type: String, enum: Object.values(RecruitmentStage) })
   stage: RecruitmentStage;
 
-  @Prop({ required: true, ref: 'Candidate', type: mongoose.Schema.Types.ObjectId })
+  @Prop({
+    required: true,
+    ref: 'Candidate',
+    type: mongoose.Schema.Types.ObjectId,
+  })
   candidate: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true, type: mongoose.Schema.Types.Mixed })
@@ -23,4 +27,5 @@ export class CandidateStage {
   updatedAt: Date;
 }
 
-export const CandidateStageSchema = SchemaFactory.createForClass(CandidateStage);
+export const CandidateStageSchema =
+  SchemaFactory.createForClass(CandidateStage);
