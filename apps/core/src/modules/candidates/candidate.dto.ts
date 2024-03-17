@@ -63,13 +63,13 @@ export class SetFeedbackOptionsDto implements FeedbackOptions {
   recommendation: FeedbackRecommendation;
 }
 
-export class MakeOfferParamsDto {
+export class CreateOfferParamsDto {
   @IsString()
   @ApiProperty()
   id: string;
 }
 
-export class MakeOfferOptionsDto implements OfferOptions {
+export class CreateOfferOptionsDto implements OfferOptions {
   @IsString()
   @ApiProperty()
   positionTitle: string;

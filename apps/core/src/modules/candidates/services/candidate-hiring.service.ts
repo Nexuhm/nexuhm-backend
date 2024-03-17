@@ -191,7 +191,7 @@ export class CandidateHiringService {
     });
   }
 
-  async makeOffer(candidateId: string, offer: OfferOptions) {
+  async createOffer(candidateId: string, offer: OfferOptions) {
     const isInAwaitingStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Awaiting,

@@ -21,8 +21,8 @@ import {
   CandidateScheduleMeetingDto,
   CandidateScheduleMeetingParamsDto,
   GetCandidatesListQueryDto,
-  MakeOfferOptionsDto,
-  MakeOfferParamsDto,
+  CreateOfferOptionsDto,
+  CreateOfferParamsDto,
   SetFeedbackOptionsDto,
   SetFeedbackParamsDto,
 } from '../candidate.dto';
@@ -164,7 +164,7 @@ export class AdminCandidateController {
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async makeOffer(@Param() { id: candidateId }: MakeOfferParamsDto, @Body() offer: MakeOfferOptionsDto) {
-    await this.candidateHiringService.makeOffer(candidateId, offer);
+  async createOffer(@Param() { id: candidateId }: CreateOfferParamsDto, @Body() offer: CreateOfferOptionsDto) {
+    await this.candidateHiringService.createOffer(candidateId, offer);
   }
 }
