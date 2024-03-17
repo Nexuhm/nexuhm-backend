@@ -1,8 +1,14 @@
-import { IsOptional, IsString, IsDate, IsEmail, IsArray, ArrayMinSize, IsTimeZone } from 'class-validator'
-import { Transform } from 'class-transformer';
+import {
+  IsOptional,
+  IsString,
+  IsDate,
+  IsEmail,
+  IsArray,
+  ArrayMinSize,
+  IsTimeZone,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ScheduleMeetingOptions } from './candidate.inerface';
-import { addMinutes } from 'date-fns';
 
 export class GetCandidatesListQueryDto {
   @IsOptional()

@@ -1,4 +1,4 @@
-import { PaginationOptions } from "../interface/pagination.interface";
+import { PaginationOptions } from '../interface/pagination.interface';
 import { IsInt, Max, IsOptional, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 

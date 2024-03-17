@@ -1,54 +1,76 @@
-import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { UserIntegration } from "../../users/schemas/user-integration.schema";
-import { Model } from "mongoose";
-import { CandidateService } from "./candidate.service";
-import { UserDocument } from "../../users/schemas/user.schema";
-import { MissingIntegrationException } from "../../../lib/exception/missing-integration.exception";
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { UserIntegration } from '../../users/schemas/user-integration.schema';
+import { Model } from 'mongoose';
+import { CandidateService } from './candidate.service';
+import { UserDocument } from '../../users/schemas/user.schema';
+import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
-import { CandidateDocument } from "../schemas/candidate.schema";
-import { CandidateNotFoundException } from "../exception/candidate-not-found.exception";
-import { ScheduleMeetingOptions } from "../candidate.inerface";
+import { CandidateDocument } from '../schemas/candidate.schema';
+import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
+import { ScheduleMeetingOptions } from '../candidate.inerface';
 
 @Injectable()
 export class CandidateHiringService {
   constructor(
-    @InjectModel(UserIntegration.name) private integrationModel: Model<UserIntegration>,
+    @InjectModel(UserIntegration.name)
+    private integrationModel: Model<UserIntegration>,
     private readonly candidateService: CandidateService,
   ) {}
 
-  async scheduleMeetingWithCandidate(user: UserDocument, candidateId: string, schedule: ScheduleMeetingOptions) {
-    console.log('schedule => ', schedule)
+  async scheduleMeetingWithCandidate(
+    user: UserDocument,
+    candidateId: string,
+    schedule: ScheduleMeetingOptions,
+  ) {
+    console.log('schedule => ', schedule);
     const candidate = await this.candidateService.findById(candidateId);
 
     if (!candidate) throw new CandidateNotFoundException();
 
-    const integrations = await this.integrationModel
-      .find({
-        _id: {
-          $in: user.integrations,
-        },
-        type: {
-          $in: ['google', 'microsoft'],
-        },
-      });
+    const integrations = await this.integrationModel.find({
+      _id: {
+        $in: user.integrations,
+      },
+      type: {
+        $in: ['google', 'microsoft'],
+      },
+    });
 
-    const googleIntegration = integrations.find(integration => integration.type == 'google');
-    const microsoftIntegration = integrations.find(integration => integration.type == 'microsoft');
+    const googleIntegration = integrations.find(
+      (integration) => integration.type == 'google',
+    );
+    const microsoftIntegration = integrations.find(
+      (integration) => integration.type == 'microsoft',
+    );
 
     if (googleIntegration) {
-      return await this.createGoogleCalendarEvent(googleIntegration.accessToken, candidate, schedule);
-    }
-    
-    if (microsoftIntegration) {
-      return await this.createMicrosoftOutlookEvent(microsoftIntegration.accessToken, candidate, schedule);
+      return await this.createGoogleCalendarEvent(
+        googleIntegration.accessToken,
+        candidate,
+        schedule,
+      );
     }
 
-    throw new MissingIntegrationException('Missing google and microsoft integration');
+    if (microsoftIntegration) {
+      return await this.createMicrosoftOutlookEvent(
+        microsoftIntegration.accessToken,
+        candidate,
+        schedule,
+      );
+    }
+
+    throw new MissingIntegrationException(
+      'Missing google and microsoft integration',
+    );
   }
 
-  private async createMicrosoftOutlookEvent(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
+  private async createMicrosoftOutlookEvent(
+    token: string,
+    candidate: CandidateDocument,
+    schedule: ScheduleMeetingOptions,
+  ) {
     const client = Client.init({
       authProvider: (done) => {
         done(null, token);
@@ -75,11 +97,11 @@ export class CandidateHiringService {
             address: candidate?.email,
           },
         },
-        ...schedule.interviewers.map(interviewer => ({
+        ...schedule.interviewers.map((interviewer) => ({
           emailAddress: {
             address: interviewer,
           },
-        }))
+        })),
       ],
       location: {
         displayName: schedule.location,
@@ -89,7 +111,11 @@ export class CandidateHiringService {
     await client.api('/me/events').post(meetingEvent);
   }
 
-  private async createGoogleCalendarEvent(token: string, candidate: CandidateDocument, schedule: ScheduleMeetingOptions) {
+  private async createGoogleCalendarEvent(
+    token: string,
+    candidate: CandidateDocument,
+    schedule: ScheduleMeetingOptions,
+  ) {
     const oAuth2Client = new google.auth.OAuth2();
 
     oAuth2Client.setCredentials({
@@ -116,9 +142,9 @@ export class CandidateHiringService {
         {
           email: candidate?.email,
         },
-        ...schedule.interviewers.map(interviewer => ({
-          email: interviewer
-        }))
+        ...schedule.interviewers.map((interviewer) => ({
+          email: interviewer,
+        })),
       ],
       reminders: {
         useDefault: false,

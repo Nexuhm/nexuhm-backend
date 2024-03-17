@@ -5,8 +5,6 @@ import { SignUpDto } from '../dto/signup.dto';
 import { compareBcryptHashes, createBcryptHash } from '@/core/lib/utils/crypto';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
-import { CompanyService } from '@/core/modules/company/services/company.service';
-import { toPossessive } from '@/core/lib/utils';
 
 @Injectable()
 export class AuthService {

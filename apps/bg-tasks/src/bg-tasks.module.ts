@@ -1,7 +1,6 @@
 import { AzureServiceBusModule } from '@/core/lib/modules/azure-service-bus/azure-service-bus.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CandiateProcessingService } from './modules/candidate-processing.service';
 import { CandidateProcessingModule } from './modules/candidate-processing.module';
 
 @Module({

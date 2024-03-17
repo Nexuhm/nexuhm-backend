@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { JobPosting } from '../schemas/job-posting.schema';
 import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { JobGenerationDto } from '../dto/job-generation.dto';
-import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -32,7 +31,7 @@ export class JobsService {
     return this.jobPostingModel.create(fields);
   }
 
-  async generateJobPosting(fields: JobGenerationDto, user: UserDocument) {
+  async generateJobPosting(fields: JobGenerationDto) {
     const model = new ChatOpenAI({
       modelName: 'gpt-3.5-turbo-1106',
       modelKwargs: {

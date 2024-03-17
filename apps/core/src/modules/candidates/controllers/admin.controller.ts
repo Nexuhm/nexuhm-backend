@@ -2,13 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
-  DefaultValuePipe,
   Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
   Param,
-  ParseIntPipe,
   Post,
   Query,
   UseGuards,
@@ -17,14 +15,16 @@ import { CandidateService } from '../services/candidate.service';
 import { CreateCandidateNoteDto } from '../dto/create-candidtae-note.dto';
 import { JwtAuthGuard } from '@/core/modules/auth/guards/jwt.guard';
 import { User } from '@/core/lib/decorators/user.decorator';
-import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
 import { UserDocument } from '../../users/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserIntegration } from '../../users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
 import { PaginationDto } from '../../../lib/dto/pagination.dto';
-import { CandidateScheduleMeetingDto, CandidateScheduleMeetingParamsDto, GetCandidatesListQueryDto } from '../candidate.dto';
+import {
+  CandidateScheduleMeetingDto,
+  CandidateScheduleMeetingParamsDto,
+  GetCandidatesListQueryDto,
+} from '../candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
 import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
@@ -98,23 +98,33 @@ export class AdminCandidateController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Integration with google or microsoft does not exist'
+    description: 'Integration with google or microsoft does not exist',
   })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async scheduleMeeting(@Param() { id: candidateId }: CandidateScheduleMeetingParamsDto, @User() user: UserDocument, @Body() schedule: CandidateScheduleMeetingDto) {
+  async scheduleMeeting(
+    @Param() { id: candidateId }: CandidateScheduleMeetingParamsDto,
+    @User() user: UserDocument,
+    @Body() schedule: CandidateScheduleMeetingDto,
+  ) {
     try {
-      await this.candidateHiringService.scheduleMeetingWithCandidate(user, candidateId, {
-        ...schedule,
-        endDate: schedule.endDate || addMinutes(schedule.endDate, 30)
-      });
+      await this.candidateHiringService.scheduleMeetingWithCandidate(
+        user,
+        candidateId,
+        {
+          ...schedule,
+          endDate: schedule.endDate || addMinutes(schedule.endDate, 30),
+        },
+      );
     } catch (e) {
-      if (e instanceof MissingIntegrationException) throw new BadRequestException(e.message);
+      if (e instanceof MissingIntegrationException)
+        throw new BadRequestException(e.message);
 
-      if (e instanceof CandidateNotFoundException) throw new NotFoundException(e.message);
+      if (e instanceof CandidateNotFoundException)
+        throw new NotFoundException(e.message);
 
       throw e;
     }
