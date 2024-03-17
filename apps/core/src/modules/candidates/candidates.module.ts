@@ -12,6 +12,7 @@ import {
 } from './schemas/candidate-note.schema';
 import { AdminCandidateController } from './controllers/admin.controller';
 import { UsersModule } from '../users/users.module';
+import { CandidateHiringService } from './services/candidate-hiring.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { UsersModule } from '../users/users.module';
     StorageModule,
   ],
   exports: [MongooseModule, VideoAnalysisService],
-  providers: [VideoAnalysisService, CandidateService],
+  providers: [VideoAnalysisService, CandidateService, CandidateHiringService],
   controllers: [CandidateController, AdminCandidateController],
 })
 export class CandidatesModule {}

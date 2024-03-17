@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import * as basicAuth from 'express-basic-auth';
 import * as cookieParser from 'cookie-parser';
 import { WinstonLoggerService } from './lib/modules/logger/logger.service';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -26,6 +27,19 @@ async function bootstrap() {
     ],
     credentials: true,
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      stopAtFirstError: true,
+      disableErrorMessages: false,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+        exposeDefaultValues: true,
+      },
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+    }),
+  );
 
   // use basic auth for Swagger UI
   app.use(

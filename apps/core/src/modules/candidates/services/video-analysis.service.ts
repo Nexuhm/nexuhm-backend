@@ -78,7 +78,7 @@ export class VideoAnalysisService {
     }/Videos?name=${encodeURIComponent(
       fileName,
     )}&privacy=private&partition=some_partition`;
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append('file', videoBuffer, fileName);
 
     const response = await firstValueFrom(

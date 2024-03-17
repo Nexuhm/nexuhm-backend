@@ -54,7 +54,7 @@ export class UsersService {
       _id: {
         $in: user.integrations,
       },
-      type: integration.type
+      type: integration.type,
     });
 
     // update existing integration

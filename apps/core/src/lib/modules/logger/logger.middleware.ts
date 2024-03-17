@@ -1,4 +1,4 @@
-import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { WinstonLoggerService } from './logger.service';
 import * as morgan from 'morgan';

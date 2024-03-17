@@ -18,7 +18,7 @@ export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
     accessToken: string,
     _: unknown,
     profile: any,
-    done: Function,
+    done: (err: any, result: any) => void,
   ) {
     try {
       const user: OAuthCallbackDto = {

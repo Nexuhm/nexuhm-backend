@@ -28,7 +28,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     accessToken: string,
     refreshToken: string,
     __: unknown,
-    done: Function,
+    done: (err: any, result: any) => void,
   ): Promise<void> {
     const data: any = jwt.decode(accessToken);
 
