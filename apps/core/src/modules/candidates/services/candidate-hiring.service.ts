@@ -16,7 +16,7 @@ import {
   FeedbackOptions,
   HireOptions,
   OfferOptions,
-  ScheduleMeetingOptions,
+  MeetingOptions,
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 
@@ -30,10 +30,10 @@ export class CandidateHiringService {
     private readonly candidateService: CandidateService,
   ) {}
 
-  async scheduleMeetingWithCandidate(
+  async createMeeting(
     user: UserDocument,
     candidateId: string,
-    schedule: ScheduleMeetingOptions,
+    schedule: MeetingOptions,
   ) {
     console.log('schedule => ', schedule);
     const candidate = await this.candidateService.findById(candidateId);
@@ -80,7 +80,7 @@ export class CandidateHiringService {
   private async createMicrosoftOutlookEvent(
     token: string,
     candidate: CandidateDocument,
-    schedule: ScheduleMeetingOptions,
+    schedule: MeetingOptions,
   ) {
     const client = Client.init({
       authProvider: (done) => {
@@ -125,7 +125,7 @@ export class CandidateHiringService {
   private async createGoogleCalendarEvent(
     token: string,
     candidate: CandidateDocument,
-    schedule: ScheduleMeetingOptions,
+    schedule: MeetingOptions,
   ) {
     const oAuth2Client = new google.auth.OAuth2();
 
@@ -179,7 +179,7 @@ export class CandidateHiringService {
     );
   }
 
-  async setFeedback(candidateId: string, feedback: FeedbackOptions) {
+  async createFeedback(candidateId: string, feedback: FeedbackOptions) {
     const isInInterviewStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Interview,
@@ -213,7 +213,7 @@ export class CandidateHiringService {
     });
   }
 
-  async hire(candidateId: string, hireData: HireOptions) {
+  async hireCandidate(candidateId: string, hireData: HireOptions) {
     const isInOfferStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Offer,

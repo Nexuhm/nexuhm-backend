@@ -16,24 +16,25 @@ import { CreateCandidateNoteDto } from '../dto/create-candidtae-note.dto';
 import { JwtAuthGuard } from '@/core/modules/auth/guards/jwt.guard';
 import { User } from '@/core/lib/decorators/user.decorator';
 import { UserDocument } from '../../users/schemas/user.schema';
-import { PaginationDto } from '../../../lib/dto/pagination.dto';
+import { PaginationDto } from '@/core/lib/dto/pagination.dto';
 import {
   CandidateScheduleMeetingDto,
   CandidateScheduleMeetingParamsDto,
   GetCandidatesListQueryDto,
   CreateOfferOptionsDto,
   CreateOfferParamsDto,
-  SetFeedbackOptionsDto,
-  SetFeedbackParamsDto,
+  CreateFeedbackOptionsDto,
+  CreateFeedbackParamsDto,
   HireParamsDto,
   HireOptionsDto,
-} from '../candidate.dto';
+} from '../dto/candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
-import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
+import { MissingIntegrationException } from '@/core/lib/exception/missing-integration.exception';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { addMinutes } from 'date-fns';
 
+@ApiTags('Candidates Controller')
 @UseGuards(JwtAuthGuard)
 @Controller('/admin/candidates')
 export class AdminCandidateController {
@@ -106,26 +107,24 @@ export class AdminCandidateController {
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async scheduleMeeting(
+  async createMeeting(
     @Param() { id: candidateId }: CandidateScheduleMeetingParamsDto,
     @User() user: UserDocument,
     @Body() schedule: CandidateScheduleMeetingDto,
   ) {
     try {
-      await this.candidateHiringService.scheduleMeetingWithCandidate(
-        user,
-        candidateId,
-        {
-          ...schedule,
-          endDate: schedule.endDate || addMinutes(schedule.endDate, 30),
-        },
-      );
+      await this.candidateHiringService.createMeeting(user, candidateId, {
+        ...schedule,
+        endDate: schedule.endDate || addMinutes(schedule.endDate, 30),
+      });
     } catch (e) {
-      if (e instanceof MissingIntegrationException)
+      if (e instanceof MissingIntegrationException) {
         throw new BadRequestException(e.message);
+      }
 
-      if (e instanceof CandidateNotFoundException)
+      if (e instanceof CandidateNotFoundException) {
         throw new NotFoundException(e.message);
+      }
 
       throw e;
     }
@@ -145,11 +144,11 @@ export class AdminCandidateController {
     description: 'Validation error',
   })
   @HttpCode(HttpStatus.OK)
-  async setFeedback(
-    @Param() { id: candidateId }: SetFeedbackParamsDto,
-    @Body() feedback: SetFeedbackOptionsDto,
+  async createFeedback(
+    @Param() { id: candidateId }: CreateFeedbackParamsDto,
+    @Body() feedback: CreateFeedbackOptionsDto,
   ) {
-    await this.candidateHiringService.setFeedback(candidateId, feedback);
+    await this.candidateHiringService.createFeedback(candidateId, feedback);
   }
 
   @Post('/:id/offer')
@@ -191,6 +190,6 @@ export class AdminCandidateController {
     @Param() { id: candidateId }: HireParamsDto,
     @Body() hireData: HireOptionsDto,
   ) {
-    await this.candidateHiringService.hire(candidateId, hireData);
+    await this.candidateHiringService.hireCandidate(candidateId, hireData);
   }
 }

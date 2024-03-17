@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
   IsString,
@@ -8,18 +9,17 @@ import {
   IsTimeZone,
   IsEnum,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   FeedbackOptions,
   HireOptions,
   OfferOptions,
-  ScheduleMeetingOptions,
-} from './candidate.interface';
+  MeetingOptions,
+} from '../candidate.interface';
 import {
   RoleCompatibility,
   FeedbackImpression,
   FeedbackRecommendation,
-} from './candidate.enum';
+} from '../candidate.enum';
 
 export class GetCandidatesListQueryDto {
   @IsOptional()
@@ -34,13 +34,13 @@ export class CandidateScheduleMeetingParamsDto {
   id: string;
 }
 
-export class SetFeedbackParamsDto {
+export class CreateFeedbackParamsDto {
   @IsString()
   @ApiProperty()
   id: string;
 }
 
-export class SetFeedbackOptionsDto implements FeedbackOptions {
+export class CreateFeedbackOptionsDto implements FeedbackOptions {
   @IsEnum(FeedbackImpression)
   @ApiProperty({
     enum: FeedbackImpression,
@@ -111,7 +111,7 @@ export class CreateOfferOptionsDto implements OfferOptions {
   benefits: string;
 }
 
-export class CandidateScheduleMeetingDto implements ScheduleMeetingOptions {
+export class CandidateScheduleMeetingDto implements MeetingOptions {
   @IsDate()
   @ApiProperty()
   startDate: Date;
