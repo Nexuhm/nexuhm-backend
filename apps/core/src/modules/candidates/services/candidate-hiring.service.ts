@@ -8,12 +8,16 @@ import { MissingIntegrationException } from '../../../lib/exception/missing-inte
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
 import {
-  Candidate,
   CandidateDocument,
   RecruitmentStage,
 } from '../schemas/candidate.schema';
-import { FeedbackOptions, OfferOptions, InterviewOptions, HireOptions } from '../candidate.interface';
-import { CandidateStage, CandidateStageType } from '../schemas/candidate-stage.schema';
+import {
+  FeedbackOptions,
+  OfferOptions,
+  InterviewOptions,
+  HireOptions,
+} from '../candidate.interface';
+import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 
 @Injectable()
@@ -23,7 +27,6 @@ export class CandidateHiringService {
     private integrationModel: Model<UserIntegration>,
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
-    @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
     private readonly candidateService: CandidateService,
   ) {}
 
@@ -32,17 +35,14 @@ export class CandidateHiringService {
     candidateId: string,
     interview: InterviewOptions,
   ) {
-    const [
-      isInAppliedStage,
-      candidate
-    ] = await Promise.all([
+    const [isInAppliedStage, candidate] = await Promise.all([
       this.candidateStageModel.exists({
         candidate: candidateId,
         stage: RecruitmentStage.Applied,
       }),
-      this.candidateService.findById(candidateId)
+      this.candidateService.findById(candidateId),
     ]);
-    
+
     if (!isInAppliedStage) {
       throw new BadRequestException('Candidate not in applied stage');
     }
@@ -133,7 +133,11 @@ export class CandidateHiringService {
 
     await client.api('/me/events').post(meetingEvent);
 
-    await this.stageTransition(candidate.id, RecruitmentStage.Interview, interview);
+    await this.candidateService.stageTransition(
+      candidate.id,
+      RecruitmentStage.Interview,
+      interview,
+    );
   }
 
   private async createGoogleCalendarEvent(
@@ -192,21 +196,11 @@ export class CandidateHiringService {
       },
     );
 
-    await this.stageTransition(candidate.id, RecruitmentStage.Interview, interview);
-  }
-
-  private async stageTransition(candidateId: string, stage: RecruitmentStage, data?: CandidateStageType ) {
-    await this.candidateStageModel.create({
-      candidate: candidateId,
-      stage,
-      data,
-    });
-
-    await this.candidateModel.updateOne({
-      _id: candidateId,
-    }, {
-      stage,
-    });
+    await this.candidateService.stageTransition(
+      candidate.id,
+      RecruitmentStage.Interview,
+      interview,
+    );
   }
 
   async createFeedback(candidateId: string, feedback: FeedbackOptions) {
@@ -219,7 +213,11 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in interview stage');
     }
 
-    await this.stageTransition(candidateId, RecruitmentStage.Awaiting, feedback);
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Awaiting,
+      feedback,
+    );
   }
 
   async createOffer(candidateId: string, offer: OfferOptions) {
@@ -232,11 +230,18 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in awaiting stage');
     }
 
-    await this.stageTransition(candidateId, RecruitmentStage.Offer, offer);
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Offer,
+      offer,
+    );
   }
 
   async reject(candidateId: string) {
-    await this.stageTransition(candidateId, RecruitmentStage.Rejected);
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Rejected,
+    );
   }
 
   async hireCandidate(candidateId: string, hireData: HireOptions) {
@@ -249,6 +254,10 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in offer stage');
     }
 
-    await this.stageTransition(candidateId, RecruitmentStage.Hired, hireData);
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Hired,
+      hireData,
+    );
   }
 }

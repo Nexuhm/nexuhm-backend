@@ -5,15 +5,21 @@ import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { InjectModel } from '@nestjs/mongoose';
 import { Candidate, RecruitmentStage } from '../schemas/candidate.schema';
-import { FilterQuery, Model } from 'mongoose';
+import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { CandidateNote } from '../schemas/candidate-note.schema';
+import {
+  CandidateStage,
+  CandidateStageType,
+} from '../schemas/candidate-stage.schema';
 
 @Injectable()
 export class CandidateService {
   constructor(
     @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
     @InjectModel(CandidateNote.name) private noteModel: Model<CandidateNote>,
+    @InjectModel(CandidateStage.name)
+    private readonly candidateStageModel: Model<CandidateStage>,
   ) {}
 
   find(filters: FilterQuery<Candidate> = {}) {
@@ -127,5 +133,34 @@ export class CandidateService {
     const result = await chain.invoke({ resumeContent });
 
     return result;
+  }
+
+  public async stageTransition(
+    candidateId: string,
+    stage: RecruitmentStage,
+    data?: CandidateStageType,
+  ) {
+    await this.candidateStageModel.create({
+      candidate: candidateId,
+      stage,
+      data,
+    });
+
+    await this.candidateModel.updateOne(
+      {
+        _id: candidateId,
+      },
+      {
+        stage,
+      },
+    );
+  }
+
+  async create(candidate: AnyKeys<Candidate>) {
+    const createdCandidate = await this.candidateModel.create(candidate);
+
+    await this.stageTransition(createdCandidate.id, RecruitmentStage.Applied);
+
+    return createdCandidate;
   }
 }

@@ -87,7 +87,7 @@ export class AdminCandidateController {
 
   @Post('/:id/reject')
   @HttpCode(HttpStatus.OK)
-  async rejectCandidate(@Param() { id: candidateId }: RejectParamsDto ) {
+  async rejectCandidate(@Param() { id: candidateId }: RejectParamsDto) {
     await this.candidateHiringService.reject(candidateId);
   }
 
@@ -102,7 +102,8 @@ export class AdminCandidateController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Integration with google/microsoft does not exist or candidate stage does not allow action',
+    description:
+      'Integration with google/microsoft does not exist or candidate stage does not allow action',
   })
   @ApiResponse({
     status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -115,14 +116,10 @@ export class AdminCandidateController {
     @Body() interview: InterviewOptionsDto,
   ) {
     try {
-      await this.candidateHiringService.createMeeting(
-        user,
-        candidateId,
-        {
-          ...interview,
-          endDate: interview.endDate || addMinutes(interview.endDate, 30),
-        },
-      );
+      await this.candidateHiringService.createMeeting(user, candidateId, {
+        ...interview,
+        endDate: interview.endDate || addMinutes(interview.endDate, 30),
+      });
     } catch (e) {
       if (e instanceof MissingIntegrationException) {
         throw new BadRequestException(e.message);

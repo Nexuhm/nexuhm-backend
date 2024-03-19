@@ -8,7 +8,11 @@ import {
   OfferOptions,
 } from '../candidate.interface';
 
-export type CandidateStageType = InterviewOptions | FeedbackOptions | OfferOptions | HireOptions;
+export type CandidateStageType =
+  | InterviewOptions
+  | FeedbackOptions
+  | OfferOptions
+  | HireOptions;
 
 @Schema({ timestamps: true })
 export class CandidateStage {
