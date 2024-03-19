@@ -12,7 +12,7 @@ import {
   CandidateDocument,
   RecruitmentStage,
 } from '../schemas/candidate.schema';
-import { FeedbackOptions, OfferOptions, InterviewOptions } from '../candidate.inerface';
+import { FeedbackOptions, OfferOptions, InterviewOptions, HireOptions } from '../candidate.interface';
 import { CandidateStage, CandidateStageType } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 
@@ -27,7 +27,7 @@ export class CandidateHiringService {
     private readonly candidateService: CandidateService,
   ) {}
 
-  async scheduleMeetingWithCandidate(
+  async createMeeting(
     user: UserDocument,
     candidateId: string,
     interview: InterviewOptions,
@@ -63,26 +63,25 @@ export class CandidateHiringService {
     const googleIntegration = integrations.find(
       (integration) => integration.type == 'google',
     );
-    const microsoftIntegration = integrations.find(
-      (integration) => integration.type == 'microsoft',
-    );
 
     if (googleIntegration) {
-      await this.createGoogleCalendarEvent(
+      return this.createGoogleCalendarEvent(
         googleIntegration.accessToken,
         candidate,
         interview,
       );
-      return this.updateStage(candidateId, RecruitmentStage.Interview, interview);
     }
 
+    const microsoftIntegration = integrations.find(
+      (integration) => integration.type == 'microsoft',
+    );
+
     if (microsoftIntegration) {
-      await this.createMicrosoftOutlookEvent(
+      return this.createMicrosoftOutlookEvent(
         microsoftIntegration.accessToken,
         candidate,
         interview,
       );
-      return this.updateStage(candidateId, RecruitmentStage.Interview, interview);
     }
 
     throw new MissingIntegrationException(
@@ -133,6 +132,8 @@ export class CandidateHiringService {
     };
 
     await client.api('/me/events').post(meetingEvent);
+
+    await this.stageTransition(candidate.id, RecruitmentStage.Interview, interview);
   }
 
   private async createGoogleCalendarEvent(
@@ -190,9 +191,11 @@ export class CandidateHiringService {
         responseType: 'json',
       },
     );
+
+    await this.stageTransition(candidate.id, RecruitmentStage.Interview, interview);
   }
 
-  private async updateStage(candidateId: string, stage: RecruitmentStage, data?: CandidateStageType ) {
+  private async stageTransition(candidateId: string, stage: RecruitmentStage, data?: CandidateStageType ) {
     await this.candidateStageModel.create({
       candidate: candidateId,
       stage,
@@ -206,17 +209,17 @@ export class CandidateHiringService {
     });
   }
 
-  async setFeedback(candidateId: string, feedback: FeedbackOptions) {
+  async createFeedback(candidateId: string, feedback: FeedbackOptions) {
     const isInInterviewStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Interview,
     });
-    
+
     if (!isInInterviewStage) {
       throw new BadRequestException('Candidate not in interview stage');
     }
 
-    await this.updateStage(candidateId, RecruitmentStage.Awaiting, feedback);
+    await this.stageTransition(candidateId, RecruitmentStage.Awaiting, feedback);
   }
 
   async createOffer(candidateId: string, offer: OfferOptions) {
@@ -229,10 +232,23 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in awaiting stage');
     }
 
-    await this.updateStage(candidateId, RecruitmentStage.Offer, offer);
+    await this.stageTransition(candidateId, RecruitmentStage.Offer, offer);
   }
 
   async reject(candidateId: string) {
-    await this.updateStage(candidateId, RecruitmentStage.Rejected);
+    await this.stageTransition(candidateId, RecruitmentStage.Rejected);
+  }
+
+  async hireCandidate(candidateId: string, hireData: HireOptions) {
+    const isInOfferStage = await this.candidateStageModel.exists({
+      candidate: candidateId,
+      stage: RecruitmentStage.Offer,
+    });
+
+    if (!isInOfferStage) {
+      throw new BadRequestException('Candidate not in offer stage');
+    }
+
+    await this.stageTransition(candidateId, RecruitmentStage.Hired, hireData);
   }
 }

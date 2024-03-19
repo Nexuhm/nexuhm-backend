@@ -14,12 +14,12 @@ export interface CandidateExperience {
 }
 
 export enum RecruitmentStage {
-  Applied = 'applied',//---
-  Interview = 'interview',//+++
-  Awaiting = 'awaiting',///+++
-  Offer = 'offer',//+++
-  Hired = 'hired',//---
-  Rejected = 'rejected',//+++
+  Applied = 'applied',
+  Interview = 'interview',
+  Awaiting = 'awaiting',
+  Offer = 'offer',
+  Hired = 'hired',
+  Rejected = 'rejected',
 }
 
 @Schema({
@@ -81,7 +81,7 @@ export class Candidate {
   skillSummary: string;
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: 'CandidateNote',
     default: [],
   })
@@ -105,3 +105,5 @@ CandidateSchema.virtual('lastNote', {
   ref: 'CandidateNote',
   justOne: true,
 });
+
+CandidateSchema.index({ job: 1, email: 1 }, { unique: true });

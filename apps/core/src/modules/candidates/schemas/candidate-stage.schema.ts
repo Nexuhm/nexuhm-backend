@@ -1,9 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { RecruitmentStage } from './candidate.schema';
-import { FeedbackOptions, InterviewOptions, OfferOptions } from '../candidate.inerface';
+import {
+  FeedbackOptions,
+  InterviewOptions,
+  HireOptions,
+  OfferOptions,
+} from '../candidate.interface';
 
-export type CandidateStageType = InterviewOptions | FeedbackOptions | OfferOptions;
+export type CandidateStageType = InterviewOptions | FeedbackOptions | OfferOptions | HireOptions;
 
 @Schema({ timestamps: true })
 export class CandidateStage {
@@ -31,3 +36,5 @@ export class CandidateStage {
 
 export const CandidateStageSchema =
   SchemaFactory.createForClass(CandidateStage);
+
+CandidateStageSchema.index({ candidate: 1, stage: 1 }, { unique: true });

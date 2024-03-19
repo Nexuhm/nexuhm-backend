@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -54,89 +55,85 @@ export class JobsController {
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Body() body: JobApplicationDto,
   ) {
-    await this.sender.sendMessages({
-      body: JSON.stringify(body),
+    const job = await this.jobsService.findBySlug(slug).populate('company');
+
+    const exists = await this.candidateModel.exists({
+      email: body.email,
+      job,
     });
 
-    // const job = await this.jobsService.findBySlug(slug).populate('company');
+    if (exists) {
+      throw new BadRequestException('Candidate already applied for this job');
+    }
 
-    // const exists = await this.candidateModel.exists({
-    //   email: body.email,
-    //   job,
-    // });
+    const candidate = await this.candidateModel.create({
+      firstname: body.firstname,
+      lastname: body.lastname,
+      email: body.email,
+      job,
+    });
 
-    // if (exists) {
-    //   throw new BadRequestException('Candidate already applied for this job');
-    // }
+    const suffix = candidate._id.toString().substring(0, 5);
+    const filePrefix = `${candidate.firstname}-${candidate.lastname}-${suffix}`;
+    const fileList = [
+      {
+        name: `${filePrefix}/${files['resume'][0].filename}`,
+        file: files['resume'][0],
+        field: 'resume',
+      },
+      {
+        name: `${filePrefix}/${files['coverLetter'][0].filename}`,
+        file: files['coverLetter'][0],
+        field: 'coverLetter',
+      },
+      {
+        name: `${filePrefix}/${files['videoResume'][0].filename}`,
+        file: files['videoResume'][0],
+        field: 'videoResume',
+      },
+    ];
 
-    // const candidate = await this.candidateModel.create({
-    //   firstname: body.firstname,
-    //   lastname: body.lastname,
-    //   email: body.email,
-    //   job,
-    // });
+    const promises = fileList.map(async ({ name, field, file }) => {
+      const client = await this.azureStorageService.uploadBlob(
+        name,
+        file.buffer,
+      );
 
-    // const suffix = candidate._id.toString().substring(0, 5);
-    // const filePrefix = `${candidate.firstname}-${candidate.lastname}-${suffix}`;
-    // const fileList = [
-    //   {
-    //     name: `${filePrefix}/${files['resume'][0].filename}`,
-    //     file: files['resume'][0],
-    //     field: 'resume',
-    //   },
-    //   {
-    //     name: `${filePrefix}/${files['coverLetter'][0].filename}`,
-    //     file: files['coverLetter'][0],
-    //     field: 'coverLetter',
-    //   },
-    //   {
-    //     name: `${filePrefix}/${files['videoResume'][0].filename}`,
-    //     file: files['videoResume'][0],
-    //     field: 'videoResume',
-    //   },
-    // ];
+      return {
+        type: field,
+        url: client.url,
+      };
+    });
 
-    // const promises = fileList.map(async ({ name, field, file }) => {
-    //   const client = await this.azureStorageService.uploadBlob(
-    //     name,
-    //     file.buffer,
-    //   );
+    const fileUrls = await Promise.all(promises);
+    candidate.set('files', fileUrls);
+    await candidate.save();
 
-    //   return {
-    //     type: field,
-    //     url: client.url,
-    //   };
-    // });
+    await this.videoAnalysisService.startVideoProcessing(
+      files.videoResume[0].buffer,
+      files.videoResume[0].originalname,
+    );
 
-    // const fileUrls = await Promise.all(promises);
-    // candidate.set('files', fileUrls);
-    // await candidate.save();
+    const result = this.applicationSuccessTemplate.render({
+      logo: job?.company.logo,
+      username: `${body.firstname} ${body.lastname}`,
+    });
 
-    // this.videoAnalysisService.startVideoProcessing(
-    //   files.videoResume[0].buffer,
-    //   files.videoResume[0].originalname,
-    // );
-
-    // const result = this.applicationSuccessTemplate.render({
-    //   logo: job?.company.logo,
-    //   username: `${body.firstname} ${body.lastname}`,
-    // });
-
-    // await this.emailServive.sendEmail({
-    //   from: 'noreply@nexuhm.com',
-    //   content: {
-    //     subject: 'Thank you for your Application',
-    //     html: result.html,
-    //   },
-    //   recipients: {
-    //     to: [
-    //       {
-    //         address: body.email,
-    //         displayName: `${body.firstname} ${body.lastname}`,
-    //       },
-    //     ],
-    //   },
-    // });
+    await this.emailServive.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: 'Thank you for your Application',
+        html: result.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: body.email,
+            displayName: `${body.firstname} ${body.lastname}`,
+          },
+        ],
+      },
+    });
 
     return true;
   }
