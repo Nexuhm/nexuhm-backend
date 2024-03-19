@@ -8,12 +8,15 @@ import { Candidate, RecruitmentStage } from '../schemas/candidate.schema';
 import { FilterQuery, Model } from 'mongoose';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { CandidateNote } from '../schemas/candidate-note.schema';
+import { CandidateStage } from '../schemas/candidate-stage.schema';
 
 @Injectable()
 export class CandidateService {
   constructor(
     @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
     @InjectModel(CandidateNote.name) private noteModel: Model<CandidateNote>,
+    @InjectModel(CandidateStage.name)
+    private readonly candidateStageModel: Model<CandidateStage>,
   ) {}
 
   find(filters: FilterQuery<Candidate> = {}) {
@@ -67,6 +70,12 @@ export class CandidateService {
       note: note.note,
       createdAt: note.createdAt,
     }));
+  }
+
+  async getStages(candidateId: string) {
+    return await this.candidateStageModel.find({
+      candidate: candidateId,
+    });
   }
 
   async parseResume(file: Buffer) {

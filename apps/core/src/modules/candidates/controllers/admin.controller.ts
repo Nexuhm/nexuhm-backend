@@ -75,6 +75,15 @@ export class AdminCandidateController {
     return this.candidateSevrice.getNotes(candidateId);
   }
 
+  @Get('/:id/stage')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success',
+  })
+  async getStages(@Param('id') candidateId: string) {
+    return await this.candidateSevrice.getStages(candidateId);
+  }
+
   @Post('/:id/notes')
   async addCandidateNote(
     @User() user,
