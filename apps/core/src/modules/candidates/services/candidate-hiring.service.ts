@@ -11,14 +11,14 @@ import {
   CandidateDocument,
   RecruitmentStage,
 } from '../schemas/candidate.schema';
-import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 import {
   FeedbackOptions,
-  HireOptions,
   OfferOptions,
-  MeetingOptions,
+  InterviewOptions,
+  HireOptions,
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
+import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 
 @Injectable()
 export class CandidateHiringService {
@@ -33,12 +33,23 @@ export class CandidateHiringService {
   async createMeeting(
     user: UserDocument,
     candidateId: string,
-    schedule: MeetingOptions,
+    interview: InterviewOptions,
   ) {
-    console.log('schedule => ', schedule);
-    const candidate = await this.candidateService.findById(candidateId);
+    const [isInAppliedStage, candidate] = await Promise.all([
+      this.candidateStageModel.exists({
+        candidate: candidateId,
+        stage: RecruitmentStage.Applied,
+      }),
+      this.candidateService.findById(candidateId),
+    ]);
 
-    if (!candidate) throw new CandidateNotFoundException();
+    if (!isInAppliedStage) {
+      throw new BadRequestException('Candidate not in applied stage');
+    }
+
+    if (!candidate) {
+      throw new CandidateNotFoundException();
+    }
 
     const integrations = await this.integrationModel.find({
       _id: {
@@ -52,23 +63,24 @@ export class CandidateHiringService {
     const googleIntegration = integrations.find(
       (integration) => integration.type == 'google',
     );
+
+    if (googleIntegration) {
+      return this.createGoogleCalendarEvent(
+        googleIntegration.accessToken,
+        candidate,
+        interview,
+      );
+    }
+
     const microsoftIntegration = integrations.find(
       (integration) => integration.type == 'microsoft',
     );
 
-    if (googleIntegration) {
-      return await this.createGoogleCalendarEvent(
-        googleIntegration.accessToken,
-        candidate,
-        schedule,
-      );
-    }
-
     if (microsoftIntegration) {
-      return await this.createMicrosoftOutlookEvent(
+      return this.createMicrosoftOutlookEvent(
         microsoftIntegration.accessToken,
         candidate,
-        schedule,
+        interview,
       );
     }
 
@@ -80,7 +92,7 @@ export class CandidateHiringService {
   private async createMicrosoftOutlookEvent(
     token: string,
     candidate: CandidateDocument,
-    schedule: MeetingOptions,
+    interview: InterviewOptions,
   ) {
     const client = Client.init({
       authProvider: (done) => {
@@ -92,15 +104,15 @@ export class CandidateHiringService {
       subject: `Interview Meeting with ${candidate?.firstname} ${candidate?.lastname}`,
       body: {
         contentType: 'text',
-        content: schedule.message,
+        content: interview.message,
       },
       start: {
-        dateTime: schedule.startDate.toISOString(),
-        timeZone: schedule.timezone,
+        dateTime: interview.startDate.toISOString(),
+        timeZone: interview.timezone,
       },
       end: {
-        dateTime: schedule.endDate.toISOString(),
-        timeZone: schedule.timezone,
+        dateTime: interview.endDate.toISOString(),
+        timeZone: interview.timezone,
       },
       attendees: [
         {
@@ -108,24 +120,30 @@ export class CandidateHiringService {
             address: candidate?.email,
           },
         },
-        ...schedule.interviewers.map((interviewer) => ({
+        ...interview.interviewers.map((interviewer) => ({
           emailAddress: {
             address: interviewer,
           },
         })),
       ],
       location: {
-        displayName: schedule.location,
+        displayName: interview.location,
       },
     };
 
     await client.api('/me/events').post(meetingEvent);
+
+    await this.candidateService.stageTransition(
+      candidate.id,
+      RecruitmentStage.Interview,
+      interview,
+    );
   }
 
   private async createGoogleCalendarEvent(
     token: string,
     candidate: CandidateDocument,
-    schedule: MeetingOptions,
+    interview: InterviewOptions,
   ) {
     const oAuth2Client = new google.auth.OAuth2();
 
@@ -140,20 +158,20 @@ export class CandidateHiringService {
 
     const meetingEvent = {
       summary: `Interview Meeting with ${candidate?.firstname} ${candidate?.lastname}`,
-      description: schedule.message,
+      description: interview.message,
       start: {
-        dateTime: schedule.startDate.toISOString(),
-        timeZone: schedule.timezone,
+        dateTime: interview.startDate.toISOString(),
+        timeZone: interview.timezone,
       },
       end: {
-        dateTime: schedule.endDate.toISOString(),
-        timeZone: schedule.timezone,
+        dateTime: interview.endDate.toISOString(),
+        timeZone: interview.timezone,
       },
       attendees: [
         {
           email: candidate?.email,
         },
-        ...schedule.interviewers.map((interviewer) => ({
+        ...interview.interviewers.map((interviewer) => ({
           email: interviewer,
         })),
       ],
@@ -164,7 +182,7 @@ export class CandidateHiringService {
           { method: 'popup', minutes: 10 },
         ],
       },
-      location: schedule.location,
+      location: interview.location,
     };
 
     await calendar.events.insert(
@@ -176,6 +194,12 @@ export class CandidateHiringService {
       {
         responseType: 'json',
       },
+    );
+
+    await this.candidateService.stageTransition(
+      candidate.id,
+      RecruitmentStage.Interview,
+      interview,
     );
   }
 
@@ -189,11 +213,11 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in interview stage');
     }
 
-    await this.candidateStageModel.create({
-      candidate: candidateId,
-      stage: RecruitmentStage.Awaiting,
-      data: feedback,
-    });
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Awaiting,
+      feedback,
+    );
   }
 
   async createOffer(candidateId: string, offer: OfferOptions) {
@@ -206,11 +230,18 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in awaiting stage');
     }
 
-    await this.candidateStageModel.create({
-      candidate: candidateId,
-      stage: RecruitmentStage.Offer,
-      data: offer,
-    });
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Offer,
+      offer,
+    );
+  }
+
+  async reject(candidateId: string) {
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Rejected,
+    );
   }
 
   async hireCandidate(candidateId: string, hireData: HireOptions) {
@@ -223,10 +254,10 @@ export class CandidateHiringService {
       throw new BadRequestException('Candidate not in offer stage');
     }
 
-    await this.candidateStageModel.create({
-      candidate: candidateId,
-      stage: RecruitmentStage.Hired,
-      data: hireData,
-    });
+    await this.candidateService.stageTransition(
+      candidateId,
+      RecruitmentStage.Hired,
+      hireData,
+    );
   }
 }

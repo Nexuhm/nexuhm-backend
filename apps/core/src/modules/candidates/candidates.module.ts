@@ -38,7 +38,7 @@ import {
     HttpModule,
     StorageModule,
   ],
-  exports: [MongooseModule, VideoAnalysisService],
+  exports: [MongooseModule, VideoAnalysisService, CandidateService],
   providers: [VideoAnalysisService, CandidateService, CandidateHiringService],
   controllers: [CandidateController, AdminCandidateController],
 })
