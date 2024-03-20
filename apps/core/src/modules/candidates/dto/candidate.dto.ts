@@ -13,7 +13,7 @@ import {
   FeedbackOptions,
   HireOptions,
   OfferOptions,
-  MeetingOptions,
+  InterviewOptions,
 } from '../candidate.interface';
 import {
   RoleCompatibility,
@@ -111,7 +111,7 @@ export class CreateOfferOptionsDto implements OfferOptions {
   benefits: string;
 }
 
-export class CandidateScheduleMeetingDto implements MeetingOptions {
+export class InterviewOptionsDto implements InterviewOptions {
   @IsDate()
   @ApiProperty()
   startDate: Date;
@@ -142,4 +142,10 @@ export class CandidateScheduleMeetingDto implements MeetingOptions {
   @IsString()
   @ApiPropertyOptional()
   message?: string;
+}
+
+export class RejectParamsDto {
+  @IsString()
+  @ApiProperty()
+  id: string;
 }

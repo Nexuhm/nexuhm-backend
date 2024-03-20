@@ -8,6 +8,7 @@ import { StorageModule } from '../storage/storage.module';
 import { CandidatesModule } from '../candidates/candidates.module';
 import { EmailsModule } from '../emails/emails.module';
 import { AzureServiceBusModule } from '@/core/lib/modules/azure-service-bus/azure-service-bus.module';
+import { JobsApplicationService } from './services/job-application.service';
 
 @Module({
   imports: [
@@ -25,6 +26,6 @@ import { AzureServiceBusModule } from '@/core/lib/modules/azure-service-bus/azur
     EmailsModule,
   ],
   controllers: [JobsAdminController, JobsController],
-  providers: [JobsService],
+  providers: [JobsService, JobsApplicationService],
 })
 export class JobsModule {}

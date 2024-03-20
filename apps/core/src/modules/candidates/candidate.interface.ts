@@ -4,7 +4,7 @@ import {
   FeedbackRecommendation,
 } from './candidate.enum';
 
-export interface MeetingOptions {
+export interface InterviewOptions {
   startDate: Date;
   endDate: Date;
   timezone: string;
