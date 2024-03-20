@@ -28,7 +28,7 @@ export class GetCandidatesListQueryDto {
   job?: string;
 }
 
-export class CandidateScheduleMeetingParamsDto {
+export class InterviewParamsDto {
   @IsString()
   @ApiProperty()
   id: string;

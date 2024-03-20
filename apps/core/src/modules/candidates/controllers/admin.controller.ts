@@ -19,7 +19,7 @@ import { UserDocument } from '../../users/schemas/user.schema';
 import { PaginationDto } from '@/core/lib/dto/pagination.dto';
 import {
   InterviewOptionsDto,
-  CandidateScheduleMeetingParamsDto,
+  InterviewParamsDto,
   GetCandidatesListQueryDto,
   CreateOfferOptionsDto,
   CreateOfferParamsDto,
@@ -120,14 +120,14 @@ export class AdminCandidateController {
   })
   @HttpCode(HttpStatus.OK)
   async createMeeting(
-    @Param() { id: candidateId }: CandidateScheduleMeetingParamsDto,
+    @Param() { id: candidateId }: InterviewParamsDto,
     @User() user: UserDocument,
-    @Body() interview: InterviewOptionsDto,
+    @Body() options: InterviewOptionsDto,
   ) {
     try {
       await this.candidateHiringService.createMeeting(user, candidateId, {
-        ...interview,
-        endDate: interview.endDate || addMinutes(interview.endDate, 30),
+        ...options,
+        endDate: options.endDate || addMinutes(options.endDate, 30),
       });
     } catch (e) {
       if (e instanceof MissingIntegrationException) {

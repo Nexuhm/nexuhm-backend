@@ -4,7 +4,7 @@ import { UserIntegration } from '../../users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
 import { CandidateService } from './candidate.service';
 import { UserDocument } from '../../users/schemas/user.schema';
-import { MissingIntegrationException } from '../../../lib/exception/missing-integration.exception';
+import { MissingIntegrationException } from '@/core/lib/exception/missing-integration.exception';
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
 import {
