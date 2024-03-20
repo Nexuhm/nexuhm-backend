@@ -75,6 +75,17 @@ export class CandidateService {
     }));
   }
 
+  async getStages(candidateId: string) {
+    return this.candidateStageModel.find({
+      candidate: candidateId,
+    })
+    .select({
+      _id: 0,
+      stage: 1,
+      createdAt: 1,
+    });
+  }
+
   async parseResume(file: Buffer) {
     const pdf = await pdfParse(file);
     const resumeContent = pdf.text;
