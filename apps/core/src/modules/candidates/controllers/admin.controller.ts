@@ -82,7 +82,7 @@ export class AdminCandidateController {
     description: 'Success',
   })
   async getStages(@Param('id') candidateId: string) {
-    return await this.candidateSevrice.getStages(candidateId);
+    return this.candidateSevrice.getStages(candidateId);
   }
 
   @Post('/:id/notes')

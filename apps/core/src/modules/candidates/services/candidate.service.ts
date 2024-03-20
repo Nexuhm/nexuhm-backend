@@ -76,8 +76,13 @@ export class CandidateService {
   }
 
   async getStages(candidateId: string) {
-    return await this.candidateStageModel.find({
+    return this.candidateStageModel.find({
       candidate: candidateId,
+    })
+    .select({
+      _id: 0,
+      stage: 1,
+      createdAt: 1,
     });
   }
 
