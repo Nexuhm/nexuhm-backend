@@ -4,6 +4,18 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Debug: Scheduler",
+      "runtimeArgs": ["start", "scheduler", "--debug", "--watch"],
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nest",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js", "!**/node_modules/**"],
+      "sourceMaps": true,
+      "cwd": "${workspaceFolder}",
+      "outputCapture": "std",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Debug: Core",
       "runtimeArgs": ["start", "core", "--debug", "--watch"],
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nest",

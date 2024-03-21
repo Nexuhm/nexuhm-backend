@@ -22,6 +22,12 @@ export enum RecruitmentStage {
   Rejected = 'rejected',
 }
 
+export enum ApplicationProcessingState {
+  New = 'new',
+  Processing = 'processing',
+  Completed = 'completed',
+}
+
 @Schema({
   timestamps: true,
   toJSON: {
@@ -79,6 +85,12 @@ export class Candidate {
 
   @Prop()
   skillSummary: string;
+
+  @Prop({ required: true, type: String, enum: Object.values(ApplicationProcessingState), default: ApplicationProcessingState.New })
+  processingState: ApplicationProcessingState;
+
+  @Prop()
+  videoIndexId: string;
 
   @Prop({
     type: [mongoose.Schema.Types.ObjectId],

@@ -86,13 +86,15 @@ export class JobsApplicationService {
     });
 
     const fileUrls = await Promise.all(promises);
-    candidate.set('files', fileUrls);
-    await candidate.save();
 
-    await this.videoAnalysisService.startVideoProcessing(
+    const indexedVideoId = await this.videoAnalysisService.startVideoProcessing(
       files.videoResume[0].buffer,
       files.videoResume[0].originalname,
     );
+
+    candidate.set('files', fileUrls);
+    candidate.set('videoIndexId', indexedVideoId);
+    await candidate.save();
 
     const result = this.applicationSuccessTemplate.render({
       logo: job?.company.logo,
