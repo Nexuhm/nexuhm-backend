@@ -16,7 +16,7 @@ export interface InterviewOptions {
 export interface FeedbackOptions {
   impression: FeedbackImpression;
   strengthsAndWeaknesses: string;
-  fitForTheRole: RoleCompatibility;
+  roleCompatibility: RoleCompatibility;
   recommendation: FeedbackRecommendation;
 }
 

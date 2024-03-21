@@ -88,7 +88,8 @@ export class CandidateService {
         _id: 0,
         stage: 1,
         createdAt: 1,
-      });
+      })
+      .sort('createdAt');
   }
 
   async parseResume(file: Buffer) {

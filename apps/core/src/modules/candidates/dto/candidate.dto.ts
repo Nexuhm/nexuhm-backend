@@ -8,6 +8,7 @@ import {
   ArrayMinSize,
   IsTimeZone,
   IsEnum,
+  IsDateString,
 } from 'class-validator';
 import {
   FeedbackOptions,
@@ -28,7 +29,7 @@ export class GetCandidatesListQueryDto {
   job?: string;
 }
 
-export class CandidateScheduleMeetingParamsDto {
+export class InterviewParamsDto {
   @IsString()
   @ApiProperty()
   id: string;
@@ -57,7 +58,7 @@ export class CreateFeedbackOptionsDto implements FeedbackOptions {
     enum: RoleCompatibility,
     enumName: 'RoleCompatibility',
   })
-  fitForTheRole: RoleCompatibility;
+  roleCompatibility: RoleCompatibility;
 
   @IsEnum(FeedbackRecommendation)
   @ApiProperty({
@@ -111,15 +112,17 @@ export class CreateOfferOptionsDto implements OfferOptions {
   benefits: string;
 }
 
-export class InterviewOptionsDto implements InterviewOptions {
-  @IsDate()
+export class InterviewOptionsDto {
   @ApiProperty()
-  startDate: Date;
+  @IsDateString()
+  date: string;
+
+  @ApiProperty()
+  startTime: string;
 
   @IsOptional()
-  @IsDate()
   @ApiPropertyOptional()
-  endDate: Date;
+  endTime: string;
 
   @IsString()
   @IsTimeZone()

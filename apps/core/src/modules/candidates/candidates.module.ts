@@ -17,6 +17,7 @@ import {
   CandidateStage,
   CandidateStageSchema,
 } from './schemas/candidate-stage.schema';
+import { AdminCandidateHiringController } from './controllers/candidate-hiring.controller';
 
 @Module({
   imports: [
@@ -40,6 +41,10 @@ import {
   ],
   exports: [MongooseModule, VideoAnalysisService, CandidateService],
   providers: [VideoAnalysisService, CandidateService, CandidateHiringService],
-  controllers: [CandidateController, AdminCandidateController],
+  controllers: [
+    CandidateController,
+    AdminCandidateController,
+    AdminCandidateHiringController,
+  ],
 })
 export class CandidatesModule {}
