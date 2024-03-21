@@ -89,10 +89,15 @@ export class JobsApplicationService {
     candidate.set('files', fileUrls);
     await candidate.save();
 
-    await this.videoAnalysisService.startVideoProcessing(
-      files.videoResume[0].buffer,
-      files.videoResume[0].originalname,
-    );
+    this.videoAnalysisService
+      .startVideoProcessing(
+        files.videoResume[0].buffer,
+        files.videoResume[0].originalname,
+      )
+      .then((res) => {
+        console.log(res);
+      })
+      .catch(console.error);
 
     const result = this.applicationSuccessTemplate.render({
       logo: job?.company.logo,
