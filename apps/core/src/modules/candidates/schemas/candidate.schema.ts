@@ -86,7 +86,12 @@ export class Candidate {
   @Prop()
   skillSummary: string;
 
-  @Prop({ required: true, type: String, enum: Object.values(ApplicationProcessingState), default: ApplicationProcessingState.New })
+  @Prop({
+    required: true,
+    type: String,
+    enum: Object.values(ApplicationProcessingState),
+    default: ApplicationProcessingState.New,
+  })
   processingState: ApplicationProcessingState;
 
   @Prop()

@@ -100,7 +100,8 @@ export class VideoAnalysisService {
     return response.data.id; // Video ID
   }
 
-  async getVideoIndex(accessToken: string, videoId: string): Promise<any> {
+  async getVideoIndex(videoId: string): Promise<any> {
+    const accessToken = await this.getAccessToken();
     const url = `https://api.videoindexer.ai/${this.location}/Accounts/${this.accountId}/Videos/${videoId}/Index?accessToken=${accessToken}`;
     const response = await firstValueFrom(this.httpService.get(url));
     return response.data;
