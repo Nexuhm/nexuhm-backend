@@ -100,13 +100,16 @@ export class VideoAnalysisService {
     return response.data.id; // Video ID
   }
 
-  async getVideoIndex(accessToken: string, videoId: string): Promise<any> {
+  async getVideoIndex(videoId: string): Promise<any> {
+    const accessToken = await this.getAccessToken();
     const url = `https://api.videoindexer.ai/${this.location}/Accounts/${this.accountId}/Videos/${videoId}/Index?accessToken=${accessToken}`;
     const response = await firstValueFrom(this.httpService.get(url));
     return response.data;
   }
 
-  async getVideoCaptions(accessToken: string, videoId: string): Promise<any> {
+  async getVideoCaptions(videoId: string): Promise<any> {
+    const accessToken = await this.getAccessToken();
+
     const url = `https://api.videoindexer.ai/${this.location}/Accounts/${this.accountId}/Videos/${videoId}/Captions?accessToken=${accessToken}&format=Txt`;
     const response = await firstValueFrom(this.httpService.get(url));
     return response.data;
@@ -115,8 +118,8 @@ export class VideoAnalysisService {
   async startVideoProcessing(
     videoBuffer: Buffer,
     fileName: string,
-  ): Promise<any> {
+  ): Promise<string> {
     const accessToken = await this.getAccessToken();
-    await this.uploadVideo(accessToken, videoBuffer, fileName);
+    return await this.uploadVideo(accessToken, videoBuffer, fileName);
   }
 }

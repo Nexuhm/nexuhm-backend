@@ -5,7 +5,7 @@ import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { InjectModel } from '@nestjs/mongoose';
 import { Candidate, RecruitmentStage } from '../schemas/candidate.schema';
-import { AnyKeys, FilterQuery, Model } from 'mongoose';
+import { AnyKeys, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { CandidateNote } from '../schemas/candidate-note.schema';
 import {
@@ -32,6 +32,10 @@ export class CandidateService {
 
   findById(id: string) {
     return this.candidateModel.findById(id);
+  }
+
+  update(filter: FilterQuery<Candidate>, update: UpdateQuery<Candidate>) {
+    return this.candidateModel.updateMany(filter, update);
   }
 
   async createNote(candidateId: string, author: UserDocument, content: string) {
