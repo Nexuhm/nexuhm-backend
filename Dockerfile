@@ -1,14 +1,23 @@
 # Use a lightweight Node.js image based on Alpine Linux as a parent image
 FROM node:20-alpine as builder
 
+ENV YARN_VERSION=4.0.1
+
+# update dependencies, add libc6-compat and dumb-init to the base image
+RUN apk update && apk upgrade && apk add --no-cache libc6-compat && apk add dumb-init
+
+# install and use yarn 4.x
+RUN corepack enable && corepack prepare yarn@${YARN_VERSION}
+
 # Set the working directory inside the container
 WORKDIR /app
 
 # Copy package.json and yarn.lock only to cache dependencies
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
 
 # Install application dependencies using --frozen-lockfile for reproducibility
-RUN yarn install --frozen-lockfile --ignore-engines
+RUN yarn install --immutable
 
 # Bundle app source
 COPY . .
@@ -27,7 +36,4 @@ COPY --from=builder /app/dist ./dist
 COPY package.json yarn.lock ./
 
 # Install only production dependencies
-RUN yarn install --frozen-lockfile --production --ignore-engines
-
-# Define the command to run your NestJS application
-CMD ["node", "dist/apps/core/main.js"]
+RUN yarn install --immutable

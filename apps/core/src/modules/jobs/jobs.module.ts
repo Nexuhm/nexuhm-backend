@@ -27,5 +27,6 @@ import { JobsApplicationService } from './services/job-application.service';
   ],
   controllers: [JobsAdminController, JobsController],
   providers: [JobsService, JobsApplicationService],
+  exports: [JobsService],
 })
 export class JobsModule {}

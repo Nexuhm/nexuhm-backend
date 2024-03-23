@@ -97,6 +97,15 @@ export class Candidate {
   @Prop()
   videoIndexId: string;
 
+  @Prop()
+  resume: string;
+
+  @Prop()
+  coverLetter: string;
+
+  @Prop()
+  videoResume: string;
+
   @Prop({
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'CandidateNote',

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CandidateService } from '../../../../core/src/modules/candidates/services/candidate.service';
-import { ApplicationProcessingState } from '../../../../core/src/modules/candidates/schemas/candidate.schema';
-import { VideoAnalysisService } from '../../../../core/src/modules/candidates/services/video-analysis.service';
-import { Sender } from '../../../../core/src/lib/modules/azure-service-bus/azure-service-bus.decorator';
+import { CandidateService } from '@/core/modules/candidates/services/candidate.service';
+import { ApplicationProcessingState } from '@/core/modules/candidates/schemas/candidate.schema';
+import { VideoAnalysisService } from '@/core/modules/candidates/services/video-analysis.service';
+import { Sender } from '@/core/lib/modules/azure-service-bus/azure-service-bus.decorator';
 import { ServiceBusSender } from '@azure/service-bus';
 
 @Injectable()
@@ -21,35 +21,23 @@ export class JobApplicationScheduler {
       .find({
         processingState: ApplicationProcessingState.New,
       })
-      .select(['videoIndexId']);
+      .select('videoIndexId');
 
-    const videos = await Promise.all(
-      candidates.map((candidate) =>
-        this.videoAnalysisService.getVideoIndex(candidate.videoIndexId),
-      ),
-    );
+    const accessToken = await this.videoAnalysisService.getAccessToken();
 
-    const processedVideosCandidateIds = videos
-      .map((video, idx) => ({ video, candidateId: candidates[idx]._id }))
-      .filter((videoIdMapping) => videoIdMapping.video.state == 'Processed')
-      .map((videoIdMapping) => videoIdMapping.candidateId);
-
-    if (processedVideosCandidateIds.length) {
-      await this.sender.sendMessages(
-        processedVideosCandidateIds.map((candidateId) => ({
-          body: JSON.stringify({ candidateId }),
-        })),
+    for (const candidate of candidates) {
+      const videoIndex = await this.videoAnalysisService.getVideoIndex(
+        candidate.videoIndexId,
+        accessToken,
       );
-      await this.candidateService.update(
-        {
-          _id: {
-            $in: processedVideosCandidateIds,
-          },
-        },
-        {
-          processingState: ApplicationProcessingState.Processing,
-        },
-      );
+
+      if (videoIndex.state === 'Processed') {
+        await this.sender.sendMessages({
+          body: JSON.stringify({
+            candidateId: candidate._id,
+          }),
+        });
+      }
     }
   }
 }

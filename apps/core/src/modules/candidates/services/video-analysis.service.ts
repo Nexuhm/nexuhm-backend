@@ -73,11 +73,12 @@ export class VideoAnalysisService {
     videoBuffer: Buffer,
     fileName: string,
   ): Promise<string> {
-    const url = `https://api.videoindexer.ai/${this.location}/Accounts/${
-      this.accountId
-    }/Videos?name=${encodeURIComponent(
-      fileName,
-    )}&privacy=private&partition=some_partition`;
+    const searchParams = querystring.stringify({
+      name: encodeURIComponent(fileName),
+      privacy: 'private',
+      partition: 'some_partition',
+    });
+    const url = `https://api.videoindexer.ai/${this.location}/Accounts/${this.accountId}/Videos?${searchParams}`;
     const formData = new FormData();
     formData.append('file', videoBuffer, fileName);
 
@@ -100,16 +101,13 @@ export class VideoAnalysisService {
     return response.data.id; // Video ID
   }
 
-  async getVideoIndex(videoId: string): Promise<any> {
-    const accessToken = await this.getAccessToken();
+  async getVideoIndex(videoId: string, accessToken: string): Promise<any> {
     const url = `https://api.videoindexer.ai/${this.location}/Accounts/${this.accountId}/Videos/${videoId}/Index?accessToken=${accessToken}`;
     const response = await firstValueFrom(this.httpService.get(url));
     return response.data;
   }
 
-  async getVideoCaptions(videoId: string): Promise<any> {
-    const accessToken = await this.getAccessToken();
-
+  async getVideoCaptions(videoId: string, accessToken: string): Promise<any> {
     const url = `https://api.videoindexer.ai/${this.location}/Accounts/${this.accountId}/Videos/${videoId}/Captions?accessToken=${accessToken}&format=Txt`;
     const response = await firstValueFrom(this.httpService.get(url));
     return response.data;
@@ -118,8 +116,8 @@ export class VideoAnalysisService {
   async startVideoProcessing(
     videoBuffer: Buffer,
     fileName: string,
+    accessToken: string,
   ): Promise<string> {
-    const accessToken = await this.getAccessToken();
-    return await this.uploadVideo(accessToken, videoBuffer, fileName);
+    return this.uploadVideo(accessToken, videoBuffer, fileName);
   }
 }

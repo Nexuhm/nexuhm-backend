@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Company } from '../schemas/company.schema';
-import { AnyKeys, Model } from 'mongoose';
+import mongoose, { AnyKeys, Model } from 'mongoose';
 
 @Injectable()
 export class CompanyService {
@@ -12,5 +12,9 @@ export class CompanyService {
 
   create(fields: AnyKeys<Company>) {
     return this.companyModel.create(fields);
+  }
+
+  findById(id) {
+    return this.companyModel.findById(id);
   }
 }

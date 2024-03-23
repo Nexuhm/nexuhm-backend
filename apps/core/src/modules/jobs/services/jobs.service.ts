@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { JobPosting } from '../schemas/job-posting.schema';
 import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { JobGenerationDto } from '../dto/job-generation.dto';
-
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { JsonOutputParser } from '@langchain/core/output_parsers';
@@ -21,6 +20,10 @@ export class JobsService {
 
   find(fields: FilterQuery<JobPosting>) {
     return this.jobPostingModel.find(fields);
+  }
+
+  findById(id) {
+    return this.jobPostingModel.findById(id);
   }
 
   findBySlug(slug: string) {

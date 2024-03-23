@@ -13,6 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Candidate } from '../../candidates/schemas/candidate.schema';
 import { Model } from 'mongoose';
 import { CandidateService } from '../../candidates/services/candidate.service';
+import * as path from 'path';
 
 @Injectable()
 export class JobsApplicationService {
@@ -55,44 +56,41 @@ export class JobsApplicationService {
 
     const suffix = candidate._id.toString().substring(0, 5);
     const filePrefix = `${candidate.firstname}-${candidate.lastname}-${suffix}`;
-    const fileList = [
-      {
-        name: `${filePrefix}/${files['resume'][0].filename}`,
-        file: files['resume'][0],
-        field: 'resume',
-      },
-      {
-        name: `${filePrefix}/${files['coverLetter'][0].filename}`,
-        file: files['coverLetter'][0],
-        field: 'coverLetter',
-      },
-      {
-        name: `${filePrefix}/${files['videoResume'][0].filename}`,
-        file: files['videoResume'][0],
-        field: 'videoResume',
-      },
-    ];
 
-    const promises = fileList.map(async ({ name, field, file }) => {
+    const getFileName = (originalName: string, newName: string) => {
+      const ext = path.extname(originalName);
+      return `${newName}${ext}`;
+    };
+
+    const getFilePath = (originalName: string, newName: string) => {
+      const name = getFileName(originalName, newName);
+      return `${filePrefix}/${name}`;
+    };
+
+    for (const fieldName in files) {
+      const file = files[fieldName][0];
+      const filePath = getFilePath(file.originalname, fieldName);
+
       const client = await this.azureStorageService.uploadBlob(
-        name,
+        filePath,
         file.buffer,
       );
 
-      return {
-        type: field,
-        url: client.url,
-      };
-    });
+      candidate.set(fieldName, client.url);
+    }
 
-    const fileUrls = await Promise.all(promises);
+    await candidate.save();
 
-    const indexedVideoId = await this.videoAnalysisService.startVideoProcessing(
+    const accessToken = await this.videoAnalysisService.getAccessToken();
+
+    console.log(getFileName(files['videoResume'][0].originalname, filePrefix));
+
+    const indexedVideoId = await this.videoAnalysisService.uploadVideo(
+      accessToken,
       files.videoResume[0].buffer,
-      files.videoResume[0].originalname,
+      getFileName(files['videoResume'][0].originalname, filePrefix),
     );
 
-    candidate.set('files', fileUrls);
     candidate.set('videoIndexId', indexedVideoId);
     await candidate.save();
 
