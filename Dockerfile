@@ -1,5 +1,5 @@
 # Use a lightweight Node.js image based on Alpine Linux as a parent image
-FROM --platform=linux/arm64 node:20-alpine as builder
+FROM node:21-alpine3.18 as builder
 
 ENV YARN_VERSION=4.0.1
 
@@ -26,7 +26,7 @@ COPY . .
 RUN yarn build
 
 # Use a multi-stage build to keep the final image lean
-FROM --platform=linux/arm64 node:20-alpine
+FROM node:21-alpine3.18
 
 # Set the working directory inside the container
 WORKDIR /app
