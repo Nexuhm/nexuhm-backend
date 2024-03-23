@@ -35,8 +35,8 @@ WORKDIR /app
 
 # Copy only the necessary files from the builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder package.json yarn.lock .yarnrc.yml ./
-COPY --from=builder .yarn ./.yarn
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
 
 # Install only production dependencies
 RUN yarn install --immutable
