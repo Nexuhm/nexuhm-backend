@@ -23,7 +23,9 @@ RUN yarn install --immutable
 COPY . .
 
 # Creates a "dist" folder with the production build
-RUN yarn build
+RUN yarn build core
+RUN yarn build scheduler
+RUN yarn build bg-tasks
 
 # Use a multi-stage build to keep the final image lean
 FROM node:21-alpine3.18
@@ -33,8 +35,8 @@ WORKDIR /app
 
 # Copy only the necessary files from the builder stage
 COPY --from=builder /app/dist ./dist
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn ./.yarn
+COPY --from=builder package.json yarn.lock .yarnrc.yml ./
+COPY --from=builder .yarn ./.yarn
 
 # Install only production dependencies
 RUN yarn install --immutable
