@@ -79,6 +79,29 @@ export class CandidateService {
     }));
   }
 
+  async getExperiences(candidateId: string) {
+    const candidate = await this.candidateModel
+      .findById(candidateId)
+      .select(['resume', 'videoResume', 'coverLetter', 'experiences']);
+    return candidate;
+  }
+
+  async getScore(candidateId: string) {
+    const candidate = await this.candidateModel
+      .findById(candidateId)
+      .select([
+        'processingState',
+        'score',
+        'description',
+        'skillScore',
+        'skillSummary',
+        'cultureScore',
+        'cultureSummary',
+      ]);
+
+    return candidate;
+  }
+
   async getStages(candidateId: string) {
     return this.candidateStageModel
       .find({

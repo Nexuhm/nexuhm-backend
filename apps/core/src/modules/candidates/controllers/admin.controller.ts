@@ -54,6 +54,16 @@ export class AdminCandidateController {
     return this.candidateSevrice.getNotes(candidateId);
   }
 
+  @Get('/:id/experiences')
+  async getCandidateExperience(@Param('id') candidateId) {
+    return this.candidateSevrice.getExperiences(candidateId);
+  }
+
+  @Get('/:id/score')
+  async getScore(@Param('id') candidateId) {
+    return this.candidateSevrice.getScore(candidateId);
+  }
+
   @Get('/:id/stage')
   @ApiResponse({
     status: HttpStatus.OK,

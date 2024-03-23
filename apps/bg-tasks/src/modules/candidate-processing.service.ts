@@ -12,7 +12,10 @@ import { CompanyService } from '@/core/modules/company/services/company.service'
 import { JobsService } from '@/core/modules/jobs/services/jobs.service';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { JsonOutputParser } from '@langchain/core/output_parsers';
+import {
+  JsonOutputParser,
+  StringOutputParser,
+} from '@langchain/core/output_parsers';
 import { ApplicationProcessingState } from '@/core/modules/candidates/schemas/candidate.schema';
 
 @Injectable()
@@ -51,36 +54,52 @@ export class CandiateProcessingService {
         const resumeContent = await this.parseFile(candidate.resume);
         const coverLetterContent = await this.parseFile(candidate.coverLetter);
 
-        const videoScore = await this.getVideoScore(
-          job!.description,
-          company!.cultureDescription,
-          videoTranscripts,
-        );
+        const [
+          description,
+          videoScore,
+          resumeScore,
+          coverLetterScore,
+          experiences,
+        ] = await Promise.all([
+          this.getGeneralDescription(
+            job!.description,
+            company!.cultureDescription,
+            resumeContent,
+          ),
+          this.getVideoScore(
+            job!.description,
+            company!.cultureDescription,
+            videoTranscripts,
+          ),
+          this.getResumeScore(
+            job!.description,
+            company!.cultureDescription,
+            resumeContent,
+          ),
+          this.getCoverLetterScore(
+            job!.description,
+            company!.cultureDescription,
+            coverLetterContent,
+          ),
+          this.parseExperiences(resumeContent),
+        ]);
 
-        const resumeScore = await this.getResumeScore(
-          job!.description,
-          company!.cultureDescription,
-          resumeContent,
+        const cultureScore = this.getCultureScore(
+          coverLetterScore.score,
+          videoScore.score,
         );
-
-        const coverLetterScore = await this.getCoverLetterScore(
-          job!.description,
-          company!.cultureDescription,
-          coverLetterContent,
-        );
-
-        const experiences = await this.parseExperiences(resumeContent);
+        const score = this.getTotalScore(resumeScore.score, cultureScore);
 
         await candidate.updateOne({
-          experiences,
-          cultureScore: (coverLetterScore.score + videoScore.score) / 2,
+          score,
+          description,
+          cultureScore,
           cultureSummary: `${coverLetterScore.summary}\n\n${videoScore.summary}`,
           skillScore: resumeScore.score,
           skillSummary: resumeScore.summary,
+          experiences,
           processingState: ApplicationProcessingState.Completed,
         });
-
-        candidate.experience = experiences;
       },
       processError: async (args) => {
         console.log(
@@ -99,6 +118,14 @@ export class CandiateProcessingService {
     return Buffer.from(response.data);
   }
 
+  getCultureScore(coverLetterScore: number, videoResumeScore: number) {
+    return (coverLetterScore + videoResumeScore) / 2;
+  }
+
+  getTotalScore(skillScore: number, cultureScore: number) {
+    return (skillScore + cultureScore) / 2;
+  }
+
   async getVideoScore(
     jobDescription: string,
     companyCulture: string,
@@ -111,6 +138,7 @@ export class CandiateProcessingService {
           type: 'json_object',
         },
       },
+      temperature: 0,
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
@@ -173,6 +201,7 @@ export class CandiateProcessingService {
           type: 'json_object',
         },
       },
+      temperature: 0,
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
@@ -182,16 +211,23 @@ export class CandiateProcessingService {
         `
           As an experienced recruiter, your task is to evaluate the candidates' resumes and conduct an analysis focusing on the mentioned experience and skills.
           You will receive details of the job description and the company culture.
+
           Your scoring should reflect the alignment of the candidates with the job description and the skills required for the positions. 
           Assign scores ranging from 1 to 10.
-        
-          Please return the JSON output in the following format:
+
+          STEPS.
+
+          1. Analyse resume to find out key features and details related to candidate.
+
+          2. Create a bullet points for each criteria for scoring.
+
+          3. Return JSON output in the following format:
         
           SCHEMA:
           -------
           {{
             score: float, // candidate's video score,
-            summary: string, // a brief explanation of the criteria you used to determine the score
+            summary: string, // a brief explanation of the criteria you used to determine the score, should be markdown
           }}
         `,
       ],
@@ -235,6 +271,7 @@ export class CandiateProcessingService {
           type: 'json_object',
         },
       },
+      temperature: 0,
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
@@ -242,12 +279,19 @@ export class CandiateProcessingService {
       [
         'system',
         `
-          As an experienced recruiter, your task is to evaluate the candidates' resumes and conduct an analysis focusing on the mentioned experience and skills.
+          As an experienced recruiter, your task is to evaluate the candidates' cover letter and conduct an analysis focusing on the mentioned experience and skills.
           You will receive details of the job description and the company culture.
+
           Your scoring should reflect the alignment of the candidates with the job description and the skills required for the positions. 
           Assign scores ranging from 1 to 10.
         
-          Please return the JSON output in the following format:
+          STEPS.
+
+          1. Analyse resume to find out key features and details related to candidate.
+
+          2. Create a bullet points for each criteria for scoring.
+
+          3. Return JSON output in the following format:
         
           SCHEMA:
           -------
@@ -285,6 +329,57 @@ export class CandiateProcessingService {
     return result;
   }
 
+  async getGeneralDescription(
+    jobDescription: string,
+    companyCulture: string,
+    resume: string,
+  ): Promise<any> {
+    const model = new ChatOpenAI({
+      modelName: 'gpt-3.5-turbo-1106',
+      openAIApiKey: process.env.OPENAI_API_KEY,
+      temperature: 0,
+    });
+
+    const prompt = ChatPromptTemplate.fromMessages([
+      [
+        'system',
+        `
+          As an experienced recruiter, your task is to summarize and give a description of the candidates' resumes,
+          You should conduct an analysis focusing on the mentioned experience and skills.
+          You will receive details of the job description and the company culture.
+
+          REQUIREMENT:
+          You should return answer in MARKDOWN format.
+        `,
+      ],
+      [
+        'user',
+        `
+        JOB DESCRIPTION
+        ---------------
+        {jobDescription}
+
+        COMPANY CULTURE
+        ---------------
+        {companyCulture}
+
+        RESUME:
+        {resume}
+      `,
+      ],
+    ]);
+
+    const chain = prompt.pipe(model).pipe(new StringOutputParser());
+
+    const result = await chain.invoke({
+      jobDescription,
+      companyCulture,
+      resume,
+    });
+
+    return result;
+  }
+
   async parseExperiences(resume: string): Promise<any> {
     const model = new ChatOpenAI({
       modelName: 'gpt-3.5-turbo-1106',
@@ -311,33 +406,35 @@ export class CandiateProcessingService {
           STEPS:
 
           1. Analyse resume and find out what experiences user had.
-          2. Parse data based on given SCHEMA.
+          2. Parse data based on the given SCHEMA.
         
           SCHEMA:
           -------
-          [
-            {{
-              jobPosition: string, // The job title or position held by the candidate.
-              startYear: number, // The year the candidate started the position.
-              endYear: number, // The year the candidate ended the position; if the position is current, use null.
-              organization: string // The name of the organization or company where the position was held.
-              summary: string // Summary of achievements and experiences gained during the employment.
-            }}
-          ]
+          {{
+            experiences: [
+              {{
+                jobPosition: string, // The job title or position held by the candidate.
+                startDate: date, // The date the candidate started the position.
+                endDate: date, // The date the candidate ended the position; if the position is current, use null.
+                organization: string // The name of the organization or company where the position was held.
+                summary: string // Summary of achievements and experiences gained during the employment.
+              }}
+            ]
+          }}
 
           EXAMPLE:
 
           [
             {{
               "jobPosition": "Software Engineer",
-              "startYear": 2018,
-              "endYear": null,
+              "startDate": 2018-03-25,
+              "endDate": null,
               "organization": "Tech Solutions Inc"
             }},
             {{
               "jobPosition": "Junior Developer",
-              "startYear": 2016,
-              "endYear": 2018,
+              "startDate": 2016-01-03,
+              "endDate": 2018-03-25,
               "organization": "Innovative Web Solutions"
               "summary": "Worked on medium load applications, gained experience in areas such as Spark, Hadoop and Databricks."
             }}
@@ -355,11 +452,11 @@ export class CandiateProcessingService {
 
     const chain = prompt.pipe(model).pipe(new JsonOutputParser());
 
-    const result = await chain.invoke({
+    const result: any = await chain.invoke({
       resume,
     });
 
-    return result;
+    return result?.experiences || [];
   }
 
   async parsePdf(fileUrl: string) {

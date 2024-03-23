@@ -77,8 +77,8 @@ export class Candidate {
   @Prop()
   cultureSummary: string;
 
-  @Prop({ type: mongoose.Schema.Types.Mixed })
-  experience: mongoose.Types.DocumentArray<CandidateExperience>;
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: [] })
+  experiences: mongoose.Types.DocumentArray<CandidateExperience>;
 
   @Prop()
   skillScore: number;
