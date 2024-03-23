@@ -26,17 +26,21 @@ export class JobApplicationScheduler {
     const accessToken = await this.videoAnalysisService.getAccessToken();
 
     for (const candidate of candidates) {
-      const videoIndex = await this.videoAnalysisService.getVideoIndex(
-        candidate.videoIndexId,
-        accessToken,
-      );
+      try {
+        const videoIndex = await this.videoAnalysisService.getVideoIndex(
+          candidate.videoIndexId,
+          accessToken,
+        );
 
-      if (videoIndex.state === 'Processed') {
-        await this.sender.sendMessages({
-          body: JSON.stringify({
-            candidateId: candidate._id,
-          }),
-        });
+        if (videoIndex.state === 'Processed') {
+          await this.sender.sendMessages({
+            body: JSON.stringify({
+              candidateId: candidate._id,
+            }),
+          });
+        }
+      } catch (err) {
+        console.log(err);
       }
     }
   }
