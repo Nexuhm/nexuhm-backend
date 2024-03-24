@@ -5,14 +5,14 @@ import {
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { JobApplicationOptions } from '../jobs.interface';
-import { EmailService } from '../../emails/services/email.service';
-import { ApplicationSuccessTemplate } from '../../emails/templates/application-success.template';
-import { VideoAnalysisService } from '../../candidates/services/video-analysis.service';
-import { AzureStorageService } from '../../storage/services/azure-storage.service';
+import { EmailService } from '@/core/modules/emails/services/email.service';
+import { ApplicationSuccessTemplate } from '@/core/modules/emails/templates/application-success.template';
+import { VideoAnalysisService } from '@/core/modules/candidates/services/video-analysis.service';
+import { AzureStorageService } from '@/core/modules/storage/services/azure-storage.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { Candidate } from '../../candidates/schemas/candidate.schema';
+import { Candidate } from '@/core/modules/candidates/schemas/candidate.schema';
 import { Model } from 'mongoose';
-import { CandidateService } from '../../candidates/services/candidate.service';
+import { CandidateService } from '@/core/modules/candidates/services/candidate.service';
 import * as path from 'path';
 
 @Injectable()

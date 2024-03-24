@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LocalLoginDto } from '../dto/login.dto';
 import { SignUpDto } from '../dto/signup.dto';
+import { PasswordResetDto } from '../dto/password-reset.dto';
 
 @ApiTags('Local Auth Controller')
 @Controller('auth')

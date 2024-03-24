@@ -12,20 +12,36 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './controllers/auth.controller';
 import { OAuthCallbackInterceptor } from './interceptors/oauth-callback.interceptor';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+  PasswordResetToken,
+  PasswordResetTokenSchema,
+} from './schemas/password-reset-token.schema';
+import { PasswordResetService } from './services/password-reset.service';
+import { PasswordResetController } from './controllers/password-reset.controller';
+import { EmailsModule } from '../emails/emails.module';
 
 @Module({
   imports: [
+    MongooseModule.forFeatureAsync([
+      {
+        name: PasswordResetToken.name,
+        useFactory: () => PasswordResetTokenSchema,
+      },
+    ]),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRATION_TIME },
     }),
     UsersModule,
+    EmailsModule,
   ],
   controllers: [
     AuthController,
     GoogleOAuthController,
     LinkedInOAuthController,
     MicrosoftOAuthController,
+    PasswordResetController,
   ],
   providers: [
     AuthService,
@@ -35,6 +51,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     LinkedInStrategy,
     MicrosoftStrategy,
     OAuthCallbackInterceptor,
+    PasswordResetService,
   ],
 })
 export class AuthModule {}
