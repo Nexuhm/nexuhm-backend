@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserIntegration } from '../../users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
@@ -19,6 +23,8 @@ import {
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
+import { HireEmailTemplate } from '../../emails/templates/hired.template';
+import { EmailService } from '../../emails/services/email.service';
 
 @Injectable()
 export class CandidateHiringService {
@@ -28,6 +34,8 @@ export class CandidateHiringService {
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
     private readonly candidateService: CandidateService,
+    private readonly hireEmail: HireEmailTemplate,
+    private readonly emailService: EmailService,
   ) {}
 
   async createMeeting(
@@ -245,12 +253,13 @@ export class CandidateHiringService {
   }
 
   async hireCandidate(candidateId: string, hireData: HireOptions) {
-    const isInOfferStage = await this.candidateStageModel.exists({
-      candidate: candidateId,
-      stage: RecruitmentStage.Offer,
-    });
+    const candidate = await this.candidateService.findById(candidateId);
 
-    if (!isInOfferStage) {
+    if (!candidate) {
+      throw new NotFoundException('Candidate not found');
+    }
+
+    if (candidate.stage != RecruitmentStage.Offer) {
       throw new BadRequestException('Candidate not in offer stage');
     }
 
@@ -259,5 +268,26 @@ export class CandidateHiringService {
       RecruitmentStage.Hired,
       hireData,
     );
+
+    const hireEmail = this.hireEmail.render({
+      firstname: candidate.firstname,
+      position: hireData.positionTitle,
+    });
+
+    await this.emailService.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: 'Hired!!!',
+        html: hireEmail.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: candidate.email,
+            displayName: `${candidate.firstname} ${candidate.lastname}`,
+          },
+        ],
+      },
+    });
   }
 }
