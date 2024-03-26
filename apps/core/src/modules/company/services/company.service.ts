@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Company } from '../schemas/company.schema';
-import mongoose, { AnyKeys, Model } from 'mongoose';
+import { AnyKeys, Model } from 'mongoose';
 
 @Injectable()
 export class CompanyService {

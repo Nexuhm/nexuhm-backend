@@ -19,15 +19,19 @@ import {
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
+import { InterviewInvitationEmailTemplate } from '../../emails/templates/interview-invitation.template';
+import { EmailService } from '../../emails/services/email.service';
 
 @Injectable()
 export class CandidateHiringService {
   constructor(
     @InjectModel(UserIntegration.name)
     private integrationModel: Model<UserIntegration>,
+    private interviewInvitationTemplate: InterviewInvitationEmailTemplate,
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
     private readonly candidateService: CandidateService,
+    private readonly emailService: EmailService,
   ) {}
 
   async createMeeting(
@@ -138,6 +142,8 @@ export class CandidateHiringService {
       RecruitmentStage.Interview,
       interview,
     );
+
+    await this.sendInterviewInvitationEmail(candidate, interview);
   }
 
   private async createGoogleCalendarEvent(
@@ -201,6 +207,46 @@ export class CandidateHiringService {
       RecruitmentStage.Interview,
       interview,
     );
+
+    await this.sendInterviewInvitationEmail(candidate, interview);
+  }
+
+  private async sendInterviewInvitationEmail(
+    candidate: CandidateDocument,
+    interview: InterviewOptions,
+  ) {
+    const formattedInterviewDate = interview.startDate.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+      timeZone: interview.timezone,
+    });
+
+    const interviewInvitationHtml = this.interviewInvitationTemplate.render({
+      firstname: candidate.firstname,
+      datetime: formattedInterviewDate,
+      timezone: interview.timezone,
+    });
+
+    await this.emailService.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: 'Interview invitation',
+        html: interviewInvitationHtml.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: candidate.email,
+            displayName: `${candidate.firstname} ${candidate.lastname}`,
+          },
+        ],
+      },
+    });
   }
 
   async createFeedback(candidateId: string, feedback: FeedbackOptions) {
