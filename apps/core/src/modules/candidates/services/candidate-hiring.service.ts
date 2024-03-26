@@ -19,6 +19,8 @@ import {
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
+import { CandidateNote } from '../schemas/candidate-note.schema';
+import { format } from 'date-fns';
 
 @Injectable()
 export class CandidateHiringService {
@@ -27,6 +29,8 @@ export class CandidateHiringService {
     private integrationModel: Model<UserIntegration>,
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
+    @InjectModel(CandidateNote.name)
+    private readonly candidateNoteModel: Model<CandidateNote>,
     private readonly candidateService: CandidateService,
   ) {}
 
@@ -63,29 +67,34 @@ export class CandidateHiringService {
     const googleIntegration = integrations.find(
       (integration) => integration.type == 'google',
     );
-
-    if (googleIntegration) {
-      return this.createGoogleCalendarEvent(
-        googleIntegration.accessToken,
-        candidate,
-        interview,
-      );
-    }
-
     const microsoftIntegration = integrations.find(
       (integration) => integration.type == 'microsoft',
     );
 
-    if (microsoftIntegration) {
-      return this.createMicrosoftOutlookEvent(
+    if (!(googleIntegration || microsoftIntegration)) {
+      throw new MissingIntegrationException(
+        'Missing google and microsoft integration',
+      );
+    }
+
+    if (googleIntegration) {
+      await this.createGoogleCalendarEvent(
+        googleIntegration.accessToken,
+        candidate,
+        interview,
+      );
+    } else if (microsoftIntegration) {
+      await this.createMicrosoftOutlookEvent(
         microsoftIntegration.accessToken,
         candidate,
         interview,
       );
     }
 
-    throw new MissingIntegrationException(
-      'Missing google and microsoft integration',
+    await this.candidateService.createNote(
+      candidateId,
+      user,
+      `Scheduled for ${format(interview.startDate, "dd/MM/yyyy 'at' hh:mm a")}`,
     );
   }
 
@@ -203,7 +212,11 @@ export class CandidateHiringService {
     );
   }
 
-  async createFeedback(candidateId: string, feedback: FeedbackOptions) {
+  async createFeedback(
+    candidateId: string,
+    user: UserDocument,
+    feedback: FeedbackOptions,
+  ) {
     const isInInterviewStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Interview,
@@ -218,9 +231,21 @@ export class CandidateHiringService {
       RecruitmentStage.Awaiting,
       feedback,
     );
+
+    const note =
+      `Overall impression: ${feedback.impression}\n` +
+      `Fit for the role: ${feedback.roleCompatibility}\n` +
+      `Recommendation: ${feedback.recommendation}\n\n` +
+      `Strengths and Weaknesses: ${feedback.strengthsAndWeaknesses}`;
+
+    await this.candidateService.createNote(candidateId, user, note);
   }
 
-  async createOffer(candidateId: string, offer: OfferOptions) {
+  async createOffer(
+    candidateId: string,
+    user: UserDocument,
+    offer: OfferOptions,
+  ) {
     const isInAwaitingStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Awaiting,
@@ -235,6 +260,14 @@ export class CandidateHiringService {
       RecruitmentStage.Offer,
       offer,
     );
+
+    const note =
+      `Position title: ${offer.positionTitle}\n` +
+      `Start date: ${format(offer.startDate, 'dd/MM/yyyy')}\n` +
+      `Salary: ${offer.salary}\n\n` +
+      `Benefits overview: ${offer.benefits}`;
+
+    await this.candidateService.createNote(candidateId, user, note);
   }
 
   async reject(candidateId: string) {
@@ -244,7 +277,11 @@ export class CandidateHiringService {
     );
   }
 
-  async hireCandidate(candidateId: string, hireData: HireOptions) {
+  async hireCandidate(
+    candidateId: string,
+    user: UserDocument,
+    hireData: HireOptions,
+  ) {
     const isInOfferStage = await this.candidateStageModel.exists({
       candidate: candidateId,
       stage: RecruitmentStage.Offer,
@@ -259,5 +296,13 @@ export class CandidateHiringService {
       RecruitmentStage.Hired,
       hireData,
     );
+
+    const note =
+      `Position title: ${hireData.positionTitle}\n` +
+      `Start date: ${format(hireData.startDate, 'dd/MM/yyyy')}\n` +
+      `Salary: ${hireData.salary}\n\n` +
+      `Please move this candidate into your HR software to onboard into your company. If you don’t have a HR system, reach out to the candidate.`;
+
+    await this.candidateService.createNote(candidateId, user, note);
   }
 }

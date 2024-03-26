@@ -113,10 +113,15 @@ export class AdminCandidateHiringController {
   })
   @HttpCode(HttpStatus.OK)
   async createFeedback(
+    @User() user: UserDocument,
     @Param() { id: candidateId }: CreateFeedbackParamsDto,
     @Body() feedback: CreateFeedbackOptionsDto,
   ) {
-    await this.candidateHiringService.createFeedback(candidateId, feedback);
+    await this.candidateHiringService.createFeedback(
+      candidateId,
+      user,
+      feedback,
+    );
   }
 
   @Post('/:id/offer')
@@ -134,10 +139,11 @@ export class AdminCandidateHiringController {
   })
   @HttpCode(HttpStatus.OK)
   async createOffer(
+    @User() user: UserDocument,
     @Param() { id: candidateId }: CreateOfferParamsDto,
     @Body() offer: CreateOfferOptionsDto,
   ) {
-    await this.candidateHiringService.createOffer(candidateId, offer);
+    await this.candidateHiringService.createOffer(candidateId, user, offer);
   }
 
   @Post('/:id/hire')
@@ -155,9 +161,14 @@ export class AdminCandidateHiringController {
   })
   @HttpCode(HttpStatus.OK)
   async hire(
+    @User() user: UserDocument,
     @Param() { id: candidateId }: HireParamsDto,
     @Body() hireData: HireOptionsDto,
   ) {
-    await this.candidateHiringService.hireCandidate(candidateId, hireData);
+    await this.candidateHiringService.hireCandidate(
+      candidateId,
+      user,
+      hireData,
+    );
   }
 }
