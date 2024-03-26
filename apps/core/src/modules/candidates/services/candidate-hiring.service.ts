@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserIntegration } from '../../users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
@@ -19,6 +23,8 @@ import {
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
+import { JobOfferEmailTemplate } from '../../emails/templates/job-offer.template';
+import { EmailService } from '../../emails/services/email.service';
 
 @Injectable()
 export class CandidateHiringService {
@@ -28,6 +34,8 @@ export class CandidateHiringService {
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
     private readonly candidateService: CandidateService,
+    private readonly jobOfferEmail: JobOfferEmailTemplate,
+    private readonly emailService: EmailService,
   ) {}
 
   async createMeeting(
@@ -221,12 +229,13 @@ export class CandidateHiringService {
   }
 
   async createOffer(candidateId: string, offer: OfferOptions) {
-    const isInAwaitingStage = await this.candidateStageModel.exists({
-      candidate: candidateId,
-      stage: RecruitmentStage.Awaiting,
-    });
+    const candidate = await this.candidateService.findById(candidateId);
 
-    if (!isInAwaitingStage) {
+    if (!candidate) {
+      throw new NotFoundException('Candidate not found');
+    }
+
+    if (candidate.stage != RecruitmentStage.Awaiting) {
       throw new BadRequestException('Candidate not in awaiting stage');
     }
 
@@ -235,6 +244,39 @@ export class CandidateHiringService {
       RecruitmentStage.Offer,
       offer,
     );
+
+    const formattedInterviewDate = offer.startDate.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    });
+
+    const jobOfferEmail = this.jobOfferEmail.render({
+      firstname: candidate.firstname,
+      position: offer.positionTitle,
+      salary: offer.salary,
+      startDate: formattedInterviewDate,
+    });
+
+    await this.emailService.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: 'Job offer',
+        html: jobOfferEmail.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: candidate.email,
+            displayName: `${candidate.firstname} ${candidate.lastname}`,
+          },
+        ],
+      },
+    });
   }
 
   async reject(candidateId: string) {
