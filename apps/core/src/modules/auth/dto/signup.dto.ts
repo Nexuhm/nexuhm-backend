@@ -1,5 +1,6 @@
 import { UserIntegration } from '@/core/modules/users/schemas/user-integration.schema';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsUUID } from 'class-validator';
 
 export class SignUpDto {
   @ApiProperty()
@@ -14,7 +15,14 @@ export class SignUpDto {
   @ApiProperty()
   password?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
   picture?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  inviteToken: string;
 
   integration: Omit<UserIntegration, '_id'>;
 }

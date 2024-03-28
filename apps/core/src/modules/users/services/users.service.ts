@@ -13,7 +13,6 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(UserIntegration.name)
     private readonly integrationModel: Model<UserIntegration>,
-    private companyService: CompanyService,
   ) {}
 
   /**
@@ -21,15 +20,7 @@ export class UsersService {
    * a new company is created for the user with a default name based on their first name.
    */
   async create(fields: Partial<User>): Promise<UserDocument> {
-    // Check if a company is provided, otherwise create a default company name.
-    const company =
-      fields.company ??
-      (await this.companyService.create({
-        name: `${toPossessive(fields.firstname)} company`,
-        slug: generateSlug(2, { format: 'kebab' }),
-      }));
-
-    return this.userModel.create({ ...fields, company });
+    return this.userModel.create(fields);
   }
 
   findByEmail(
