@@ -20,6 +20,7 @@ import {
 import { PasswordResetService } from './services/password-reset.service';
 import { PasswordResetController } from './controllers/password-reset.controller';
 import { EmailsModule } from '../emails/emails.module';
+import { CompanyModule } from '../company/company.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EmailsModule } from '../emails/emails.module';
       signOptions: { expiresIn: process.env.JWT_EXPIRATION_TIME },
     }),
     UsersModule,
+    CompanyModule,
     EmailsModule,
   ],
   controllers: [

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { UserIntegration } from './user-integration.schema';
 import { CompanyDocument } from '@/core/modules/company/schemas/company.schema';
+import { UserRole } from '../types/user-role.enum';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -45,6 +46,12 @@ export class User {
     ref: 'Company',
   })
   company: CompanyDocument;
+
+  @Prop({
+    type: [String],
+    required: true,
+  })
+  roles: UserRole[];
 
   @Prop({ type: mongoose.Schema.Types.Mixed })
   metaData: UserMetaData;

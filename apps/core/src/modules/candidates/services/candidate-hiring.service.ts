@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserIntegration } from '../../users/schemas/user-integration.schema';
+import { UserIntegration } from '@/core/modules/users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
 import { CandidateService } from './candidate.service';
-import { UserDocument } from '../../users/schemas/user.schema';
+import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { MissingIntegrationException } from '@/core/lib/exception/missing-integration.exception';
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
@@ -23,8 +23,10 @@ import {
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
-import { HireEmailTemplate } from '../../emails/templates/hired.template';
-import { EmailService } from '../../emails/services/email.service';
+import { JobOfferEmailTemplate } from '@/core/modules/emails/templates/job-offer.template';
+import { HireEmailTemplate } from '@/core/modules/emails/templates/job-hire.template';
+import { InterviewInvitationEmailTemplate } from '@/core/modules/emails/templates/interview-invitation.template';
+import { EmailService } from '@/core/modules/emails/services/email.service';
 
 @Injectable()
 export class CandidateHiringService {
@@ -33,8 +35,10 @@ export class CandidateHiringService {
     private integrationModel: Model<UserIntegration>,
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
+    private readonly interviewInvitationTemplate: InterviewInvitationEmailTemplate,
     private readonly candidateService: CandidateService,
-    private readonly hireEmail: HireEmailTemplate,
+    private readonly hireEmailTemplate: HireEmailTemplate,
+    private readonly offerEmailTemplate: JobOfferEmailTemplate,
     private readonly emailService: EmailService,
   ) {}
 
@@ -146,6 +150,8 @@ export class CandidateHiringService {
       RecruitmentStage.Interview,
       interview,
     );
+
+    await this.sendInterviewInvitationEmail(candidate, interview);
   }
 
   private async createGoogleCalendarEvent(
@@ -209,6 +215,46 @@ export class CandidateHiringService {
       RecruitmentStage.Interview,
       interview,
     );
+
+    await this.sendInterviewInvitationEmail(candidate, interview);
+  }
+
+  private async sendInterviewInvitationEmail(
+    candidate: CandidateDocument,
+    interview: InterviewOptions,
+  ) {
+    const formattedInterviewDate = interview.startDate.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+      timeZone: interview.timezone,
+    });
+
+    const interviewInvitationHtml = this.interviewInvitationTemplate.render({
+      firstname: candidate.firstname,
+      datetime: formattedInterviewDate,
+      timezone: interview.timezone,
+    });
+
+    await this.emailService.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: 'Interview Invitation',
+        html: interviewInvitationHtml.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: candidate.email,
+            displayName: `${candidate.firstname} ${candidate.lastname}`,
+          },
+        ],
+      },
+    });
   }
 
   async createFeedback(candidateId: string, feedback: FeedbackOptions) {
@@ -229,13 +275,14 @@ export class CandidateHiringService {
   }
 
   async createOffer(candidateId: string, offer: OfferOptions) {
-    const isInAwaitingStage = await this.candidateStageModel.exists({
-      candidate: candidateId,
-      stage: RecruitmentStage.Awaiting,
-    });
+    const candidate = await this.candidateService.findById(candidateId);
 
-    if (!isInAwaitingStage) {
-      throw new BadRequestException('Candidate not in awaiting stage');
+    if (!candidate) {
+      throw new NotFoundException('Candidate not found');
+    }
+
+    if (candidate.stage != RecruitmentStage.Awaiting) {
+      throw new BadRequestException("Candidate isn't in awaiting stage");
     }
 
     await this.candidateService.stageTransition(
@@ -243,6 +290,39 @@ export class CandidateHiringService {
       RecruitmentStage.Offer,
       offer,
     );
+
+    const formattedInterviewDate = offer.startDate.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    });
+
+    const jobOfferEmail = this.offerEmailTemplate.render({
+      firstname: candidate.firstname,
+      position: offer.positionTitle,
+      salary: offer.salary,
+      startDate: formattedInterviewDate,
+    });
+
+    await this.emailService.sendEmail({
+      from: 'noreply@nexuhm.com',
+      content: {
+        subject: "You've got and offer in Nexuhm",
+        html: jobOfferEmail.html,
+      },
+      recipients: {
+        to: [
+          {
+            address: candidate.email,
+            displayName: `${candidate.firstname} ${candidate.lastname}`,
+          },
+        ],
+      },
+    });
   }
 
   async reject(candidateId: string) {
@@ -269,7 +349,7 @@ export class CandidateHiringService {
       hireData,
     );
 
-    const hireEmail = this.hireEmail.render({
+    const hireEmail = this.hireEmailTemplate.render({
       firstname: candidate.firstname,
       position: hireData.positionTitle,
     });
@@ -277,7 +357,7 @@ export class CandidateHiringService {
     await this.emailService.sendEmail({
       from: 'noreply@nexuhm.com',
       content: {
-        subject: 'Hired!!!',
+        subject: "Congratulations, you've been hired!",
         html: hireEmail.html,
       },
       recipients: {

@@ -7,6 +7,7 @@ import {
   UserIntegrationSchema,
 } from './schemas/user-integration.schema';
 import { CompanyModule } from '../company/company.module';
+import { InviteToken, InviteTokenSchema } from './schemas/invite-token.schema';
 
 @Module({
   imports: [
@@ -18,6 +19,10 @@ import { CompanyModule } from '../company/company.module';
       {
         name: UserIntegration.name,
         useFactory: () => UserIntegrationSchema,
+      },
+      {
+        name: InviteToken.name,
+        useFactory: () => InviteTokenSchema,
       },
     ]),
     CompanyModule,
