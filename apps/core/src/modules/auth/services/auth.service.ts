@@ -5,12 +5,25 @@ import { SignUpDto } from '../dto/signup.dto';
 import { compareBcryptHashes, createBcryptHash } from '@/core/lib/utils/crypto';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { OAuthCallbackDto } from '../dto/oauth-callback.dto';
+import { CompanyService } from '@/core/modules/company/services/company.service';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  InviteToken,
+  InviteTokenDocument,
+} from '@/core/modules/users/schemas/invite-token.schema';
+import { Model } from 'mongoose';
+import { generateSlug } from 'random-word-slugs';
+import { toPossessive } from '@/core/lib/utils';
+import { UserRole } from '../../users/types/user-role.enum';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private companyService: CompanyService,
+    @InjectModel(InviteToken.name)
+    private inviteModelToken: Model<InviteTokenDocument>,
   ) {}
 
   async signUp(fields: SignUpDto) {
@@ -28,8 +41,24 @@ export class AuthService {
       ? await createBcryptHash(fields.password)
       : undefined;
 
+    const inviteToken = await this.inviteModelToken.findOne({
+      token: fields.inviteToken,
+    });
+
+    // Check if a company is provided, otherwise create a default company name.
+    const company =
+      inviteToken?.company ||
+      (await this.companyService.create({
+        name: `${toPossessive(fields.firstname)} company`,
+        slug: generateSlug(2, { format: 'kebab' }),
+      }));
+
+    const roles = inviteToken?.role ? [inviteToken.role] : [UserRole.Owner];
+
     const user = await this.usersService.create({
       ...fields,
+      roles,
+      company,
       password: passwordHash,
       metaData: {
         signUpMethod: 'website',
