@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserIntegration } from '../../users/schemas/user-integration.schema';
+import { UserIntegration } from '@/core/modules/users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
 import { CandidateService } from './candidate.service';
-import { UserDocument } from '../../users/schemas/user.schema';
+import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { MissingIntegrationException } from '@/core/lib/exception/missing-integration.exception';
 import { google } from 'googleapis';
 import { Client } from '@microsoft/microsoft-graph-client';
@@ -19,8 +19,8 @@ import {
 } from '../candidate.interface';
 import { CandidateStage } from '../schemas/candidate-stage.schema';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
-import { InterviewInvitationEmailTemplate } from '../../emails/templates/interview-invitation.template';
-import { EmailService } from '../../emails/services/email.service';
+import { InterviewInvitationEmailTemplate } from '@/core/modules/emails/templates/interview-invitation.template';
+import { EmailService } from '@/core/modules/emails/services/email.service';
 
 @Injectable()
 export class CandidateHiringService {
@@ -235,7 +235,7 @@ export class CandidateHiringService {
     await this.emailService.sendEmail({
       from: 'noreply@nexuhm.com',
       content: {
-        subject: 'Interview invitation',
+        subject: 'Interview Invitation',
         html: interviewInvitationHtml.html,
       },
       recipients: {
