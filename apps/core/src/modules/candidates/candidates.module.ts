@@ -18,6 +18,7 @@ import {
   CandidateStageSchema,
 } from './schemas/candidate-stage.schema';
 import { AdminCandidateHiringController } from './controllers/candidate-hiring.controller';
+import { EmailsModule } from '../emails/emails.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AdminCandidateHiringController } from './controllers/candidate-hiring.c
     UsersModule,
     HttpModule,
     StorageModule,
+    EmailsModule,
   ],
   exports: [MongooseModule, VideoAnalysisService, CandidateService],
   providers: [VideoAnalysisService, CandidateService, CandidateHiringService],

@@ -14,7 +14,6 @@ import {
   FeedbackOptions,
   HireOptions,
   OfferOptions,
-  InterviewOptions,
 } from '../candidate.interface';
 import {
   RoleCompatibility,
