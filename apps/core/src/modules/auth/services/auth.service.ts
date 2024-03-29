@@ -82,9 +82,25 @@ export class AuthService {
     // Check if the user with the provided email already exists.
     let user = await this.usersService.findByEmail(fields.email);
 
+    const inviteToken = await this.inviteModelToken.findOne({
+      token: fields.inviteToken,
+    });
+
+    // Check if a company is provided, otherwise create a default company name.
+    const company =
+      inviteToken?.company ||
+      (await this.companyService.create({
+        name: `${toPossessive(fields.firstname)} company`,
+        slug: generateSlug(2, { format: 'kebab' }),
+      }));
+
+    const roles = inviteToken?.role ? [inviteToken.role] : [UserRole.Owner];
+
     // If the user doesn't exist, create a new user account.
     if (!user) {
       user = await this.usersService.create({
+        roles,
+        company,
         email: fields.email,
         firstname: fields.firstname,
         lastname: fields.lastname,
