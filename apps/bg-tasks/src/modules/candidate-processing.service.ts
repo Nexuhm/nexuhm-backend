@@ -239,11 +239,11 @@ export class CandiateProcessingService {
       [
         'user',
         `
-        JOB DESCRIPTION
+        JOB DESCRIPTION:
         ---------------
         {jobDescription}
 
-        COMPANY CULTURE
+        COMPANY CULTURE:
         ---------------
         {companyCulture}
 
@@ -309,11 +309,11 @@ export class CandiateProcessingService {
       [
         'user',
         `
-        JOB DESCRIPTION
+        JOB DESCRIPTION:
         ---------------
         {jobDescription}
 
-        COMPANY CULTURE
+        COMPANY CULTURE:
         ---------------
         {companyCulture}
 

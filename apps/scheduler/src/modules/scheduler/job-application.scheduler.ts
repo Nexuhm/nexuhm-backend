@@ -25,6 +25,8 @@ export class JobApplicationScheduler {
 
     const accessToken = await this.videoAnalysisService.getAccessToken();
 
+    console.log(accessToken, candidates);
+
     for (const candidate of candidates) {
       try {
         const videoIndex = await this.videoAnalysisService.getVideoIndex(
