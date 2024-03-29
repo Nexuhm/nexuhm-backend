@@ -117,7 +117,7 @@ export class AuthService {
       password: true,
     });
 
-    const isValid = await compareBcryptHashes(user?.password || '', password);
+    const isValid = await compareBcryptHashes(password, user?.password || '');
 
     if (!isValid) {
       return null;

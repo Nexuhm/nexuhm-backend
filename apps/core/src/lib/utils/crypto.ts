@@ -14,9 +14,9 @@ export function createBcryptHash(password): Promise<string> {
   });
 }
 
-export function compareBcryptHashes(original, comparison): Promise<string> {
+export function compareBcryptHashes(plainText, hash): Promise<string> {
   return new Promise((resolve, reject) => {
-    bcrypt.compare(original, comparison, function (err, hash) {
+    bcrypt.compare(plainText, hash, function (err, hash) {
       if (err) {
         return reject(err);
       }

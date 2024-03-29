@@ -7,6 +7,7 @@ import { EmailService } from '@/core/modules/emails/services/email.service';
 import { PasswordResetEmailTemplate } from '../../emails/templates/password-reset.template';
 import { UserDocument } from '../../users/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { createBcryptHash } from '@/core/lib/utils/crypto';
 
 @Injectable()
 export class PasswordResetService {
@@ -67,7 +68,9 @@ export class PasswordResetService {
     }
 
     if (newPassword === confirmPassword) {
-      user.password = newPassword;
+      await user.updateOne({
+        password: await createBcryptHash(newPassword),
+      });
     }
 
     await resetToken.deleteOne();
