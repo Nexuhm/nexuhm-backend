@@ -17,36 +17,40 @@ export class JobApplicationScheduler {
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkNewCandidates() {
-    const candidates = await this.candidateService
-      .find({
-        processingState: ApplicationProcessingState.New,
-      })
-      .select('videoIndexId');
+    try {
+      const candidates = await this.candidateService
+        .find({
+          processingState: ApplicationProcessingState.New,
+        })
+        .select('videoIndexId');
 
-    const accessToken = await this.videoAnalysisService.getAccessToken();
+      const accessToken = await this.videoAnalysisService.getAccessToken();
 
-    console.log(accessToken, candidates);
+      console.log(accessToken, candidates);
 
-    for (const candidate of candidates) {
-      try {
-        const videoIndex = await this.videoAnalysisService.getVideoIndex(
-          candidate.videoIndexId,
-          accessToken,
-        );
+      for (const candidate of candidates) {
+        try {
+          const videoIndex = await this.videoAnalysisService.getVideoIndex(
+            candidate.videoIndexId,
+            accessToken,
+          );
 
-        // TODO: remove logs
-        console.log(candidate, videoIndex);
+          // TODO: remove logs
+          console.log(candidate, videoIndex);
 
-        if (videoIndex.state === 'Processed') {
-          await this.sender.sendMessages({
-            body: JSON.stringify({
-              candidateId: candidate._id,
-            }),
-          });
+          if (videoIndex.state === 'Processed') {
+            await this.sender.sendMessages({
+              body: JSON.stringify({
+                candidateId: candidate._id,
+              }),
+            });
+          }
+        } catch (err) {
+          console.log(err);
         }
-      } catch (err) {
-        console.log(err);
       }
+    } catch (err) {
+      console.error(err);
     }
   }
 }
