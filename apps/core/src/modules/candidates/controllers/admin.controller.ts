@@ -15,6 +15,7 @@ import { User } from '@/core/lib/decorators/user.decorator';
 import { PaginationDto } from '@/core/lib/dto/pagination.dto';
 import { GetCandidatesListQueryDto } from '../dto/candidate.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 
 @ApiTags('Candidates Controller')
 @UseGuards(JwtAuthGuard)
@@ -24,13 +25,17 @@ export class AdminCandidateController {
 
   @Get('/')
   async getCandidates(
+    @User() user: UserDocument,
     @Query() { limit, skip }: PaginationDto,
-    @Query() { job }: GetCandidatesListQueryDto,
+    @Query() { jobId }: GetCandidatesListQueryDto,
   ) {
-    const filters = job ? { job } : {};
+    const filters = jobId ? { jobId } : {};
 
     const data = await this.candidateSevrice
-      .find(filters)
+      .find({
+        ...filters,
+        company: user.company,
+      })
       .limit(limit)
       .skip(skip)
       .populate('job', 'title')

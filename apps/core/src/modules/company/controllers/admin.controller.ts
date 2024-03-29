@@ -59,8 +59,8 @@ export class CompanyAdminController {
     const careersPage = await this.careersPageModel.findOneAndUpdate(
       { company },
       {
-        ...body,
         company,
+        ...body,
       },
       {
         upsert: true,

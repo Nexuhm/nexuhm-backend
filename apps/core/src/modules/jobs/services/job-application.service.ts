@@ -51,6 +51,7 @@ export class JobsApplicationService {
       firstname: application.firstname,
       lastname: application.lastname,
       email: application.email,
+      company: job.company,
       job,
     });
 
@@ -82,8 +83,6 @@ export class JobsApplicationService {
     await candidate.save();
 
     const accessToken = await this.videoAnalysisService.getAccessToken();
-
-    console.log(getFileName(files['videoResume'][0].originalname, filePrefix));
 
     const indexedVideoId = await this.videoAnalysisService.uploadVideo(
       accessToken,

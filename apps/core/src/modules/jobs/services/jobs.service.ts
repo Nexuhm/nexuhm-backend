@@ -6,12 +6,16 @@ import { JobGenerationDto } from '../dto/job-generation.dto';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { JsonOutputParser } from '@langchain/core/output_parsers';
+import { Company } from '@/core/modules/company/schemas/company.schema';
+import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 
 @Injectable()
 export class JobsService {
   constructor(
     @InjectModel(JobPosting.name)
     private readonly jobPostingModel: Model<JobPosting>,
+    @InjectModel(Company.name)
+    private readonly companyModel: Model<Company>,
   ) {}
 
   findOne(fields: FilterQuery<JobPosting>) {
@@ -26,6 +30,10 @@ export class JobsService {
     return this.jobPostingModel.findById(id);
   }
 
+  findByIdAndUpdate(...args) {
+    return this.jobPostingModel.findByIdAndUpdate(...args);
+  }
+
   findBySlug(slug: string) {
     return this.jobPostingModel.findOne({ slug });
   }
@@ -34,7 +42,9 @@ export class JobsService {
     return this.jobPostingModel.create(fields);
   }
 
-  async generateJobPosting(fields: JobGenerationDto) {
+  async generateJobPosting(fields: JobGenerationDto, user: UserDocument) {
+    const company = await this.companyModel.findById(user.company);
+
     const model = new ChatOpenAI({
       modelName: 'gpt-3.5-turbo-1106',
       modelKwargs: {
@@ -49,7 +59,13 @@ export class JobsService {
       [
         'system',
         `
-          You are an experienced recruiter. You can create well defined job postings from a \`title\` and \`description\`.
+          You are an experienced recruiter. You can create well defined job postings from given fields:
+          
+          - \`title\`,  
+          - \`description\` 
+          - \`companyDescription\` 
+          - \`cultureDescription\`
+
           Create well defined, engaging job posting.
 
           You need to go over following steps during the process to achieve best results.
@@ -57,7 +73,10 @@ export class JobsService {
           Step 1.
           Fix user search INPUT, adjust it for further NLP processing, it may contain typos. 
 
-          Step 2.
+          Step 3.
+          Analyze given company description and culture description to create a job description aligning with company business needs.
+
+          Step 3.
           Use following JSON schema and generate posting fields.
 
           REQUIREMENTS:
@@ -96,6 +115,14 @@ export class JobsService {
       [
         'user',
         `
+        COMPANY DESCRIPTION:
+        --------------------
+        {description}
+
+        COMPANY CULTURE:
+        ---------------
+        {cultureDescription}
+
         QUERY:
         -----
 
@@ -107,7 +134,11 @@ export class JobsService {
 
     const chain = prompt.pipe(model).pipe(new JsonOutputParser());
 
-    const result = await chain.invoke(fields);
+    const result = await chain.invoke({
+      ...fields,
+      cultureDescription: company?.cultureDescription,
+      description: company?.description,
+    });
 
     return result;
   }

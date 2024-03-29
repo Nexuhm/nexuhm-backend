@@ -17,7 +17,7 @@ export class OAuthCallbackDto {
 
   @IsUUID()
   @IsOptional()
-  inviteToken: string;
+  inviteToken?: string;
 
   @IsString()
   type: OAuthIntegrationType;

@@ -9,6 +9,7 @@ import { CandidatesModule } from '../candidates/candidates.module';
 import { EmailsModule } from '../emails/emails.module';
 import { AzureServiceBusModule } from '@/core/lib/modules/azure-service-bus/azure-service-bus.module';
 import { JobsApplicationService } from './services/job-application.service';
+import { CompanyModule } from '../company/company.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JobsApplicationService } from './services/job-application.service';
       senders: ['candidate-processing-queue'],
     }),
     StorageModule,
+    CompanyModule,
     CandidatesModule,
     EmailsModule,
   ],

@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '@/core/modules/auth/guards/jwt.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JobGenerationDto } from '../dto/job-generation.dto';
 import { JobPostingState } from '../types/job-posting-state.enum';
+import slugify from 'slugify';
+import mongoose from 'mongoose';
 
 @ApiTags('Jobs Controller')
 @Controller('/admin/jobs')
@@ -40,11 +42,32 @@ export class JobsAdminController {
   @ApiOperation({ description: 'Create job posting draft' })
   @ApiBearerAuth()
   createJobPosting(@User() user: UserDocument, @Body() body) {
+    const slug = slugify(body.title, {
+      strict: true,
+      trim: true,
+      lower: true,
+    });
+
+    const objectId = new mongoose.Types.ObjectId();
+
     return this.jobsService.create({
       ...body,
+      _id: objectId,
+      slug: `${slug}-${objectId.toString().slice(-6)}`,
       state: JobPostingState.Draft,
       company: user.company,
     });
+  }
+
+  @Post('/:id/state')
+  @ApiOperation({ description: 'Change job posting state' })
+  @ApiBearerAuth()
+  changeState(@Param('id') jobId: string, @Body() body) {
+    return this.jobsService.findByIdAndUpdate(
+      jobId,
+      { state: body.state },
+      { new: true },
+    );
   }
 
   @Post('/generate')
@@ -52,7 +75,10 @@ export class JobsAdminController {
     description: 'Generate job posting based on given title and description',
   })
   @ApiBearerAuth()
-  generateJobPosting(@Body() body: JobGenerationDto) {
-    return this.jobsService.generateJobPosting(body);
+  generateJobPosting(
+    @Body() body: JobGenerationDto,
+    @User() user: UserDocument,
+  ) {
+    return this.jobsService.generateJobPosting(body, user);
   }
 }

@@ -28,7 +28,7 @@ import {
       },
     ]),
   ],
-  exports: [CompanyService],
+  exports: [MongooseModule, CompanyService],
   providers: [CompanyService],
   controllers: [
     OnboardingController,

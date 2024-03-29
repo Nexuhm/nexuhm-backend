@@ -25,7 +25,7 @@ export class GetCandidatesListQueryDto {
   @IsOptional()
   @IsString()
   @ApiPropertyOptional()
-  job?: string;
+  jobId?: string;
 }
 
 export class InterviewParamsDto {
