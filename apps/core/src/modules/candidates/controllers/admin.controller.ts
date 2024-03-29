@@ -29,7 +29,7 @@ export class AdminCandidateController {
     @Query() { limit, skip }: PaginationDto,
     @Query() { jobId }: GetCandidatesListQueryDto,
   ) {
-    const filters = jobId ? { jobId } : {};
+    const filters = jobId ? { job: jobId } : {};
 
     const data = await this.candidateSevrice
       .find({
