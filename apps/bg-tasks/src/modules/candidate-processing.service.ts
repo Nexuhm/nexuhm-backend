@@ -34,9 +34,14 @@ export class CandiateProcessingService {
     this.receiver.subscribe({
       processMessage: async (message) => {
         const data = JSON.parse(message.body);
+
         const candidate = await this.candidateService.findById(
           data.candidateId,
         );
+
+        // TODO: remove logs
+        console.log(data, candidate);
+
         const job = await this.jobsService.findById(candidate?.job);
         const company = await this.companyService.findById(job?.company);
 

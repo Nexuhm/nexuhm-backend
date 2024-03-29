@@ -32,6 +32,9 @@ export class JobApplicationScheduler {
           accessToken,
         );
 
+        // TODO: remove logs
+        console.log(candidate, videoIndex);
+
         if (videoIndex.state === 'Processed') {
           await this.sender.sendMessages({
             body: JSON.stringify({
