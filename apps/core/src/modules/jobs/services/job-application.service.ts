@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  LoggerService,
   NotFoundException,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
@@ -13,6 +14,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Candidate } from '@/core/modules/candidates/schemas/candidate.schema';
 import { Model } from 'mongoose';
 import { CandidateService } from '@/core/modules/candidates/services/candidate.service';
+import { WinstonLoggerService } from '@/core/lib/modules/logger/logger.service';
 import * as path from 'path';
 
 @Injectable()
@@ -24,6 +26,7 @@ export class JobsApplicationService {
     private readonly applicationSuccessTemplate: ApplicationSuccessTemplate,
     private readonly videoAnalysisService: VideoAnalysisService,
     private readonly azureStorageService: AzureStorageService,
+    private readonly logger: WinstonLoggerService,
     @InjectModel(Candidate.name) private candidateModel: Model<Candidate>,
   ) {}
 
@@ -83,12 +86,31 @@ export class JobsApplicationService {
     await candidate.save();
 
     const accessToken = await this.videoAnalysisService.getAccessToken();
+    const indexedVideoId = await this.videoAnalysisService
+      .uploadVideo(
+        accessToken,
+        files.videoResume[0].buffer,
+        getFileName(files['videoResume'][0].originalname, filePrefix),
+      )
+      .catch((err) => {
+        if (err.response.status === 409) {
+          const text = err.response.data.Message;
+          const regex = /video id: '([a-zA-Z0-9]+)'/;
+          const match = text.match(regex);
 
-    const indexedVideoId = await this.videoAnalysisService.uploadVideo(
-      accessToken,
-      files.videoResume[0].buffer,
-      getFileName(files['videoResume'][0].originalname, filePrefix),
-    );
+          if (!match) {
+            return null;
+          }
+
+          const videoId = match[1];
+
+          this.logger.error(
+            `Error: VIDEO_ALREADY_IN_PROGRESS, reusing videoId (${videoId})`,
+          );
+
+          return videoId;
+        }
+      });
 
     candidate.set('videoIndexId', indexedVideoId);
     await candidate.save();

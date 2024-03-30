@@ -10,6 +10,7 @@ import { EmailsModule } from '../emails/emails.module';
 import { AzureServiceBusModule } from '@/core/lib/modules/azure-service-bus/azure-service-bus.module';
 import { JobsApplicationService } from './services/job-application.service';
 import { CompanyModule } from '../company/company.module';
+import { LoggerModule } from '@/core/lib/modules/logger/logger.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CompanyModule } from '../company/company.module';
     AzureServiceBusModule.forFeature({
       senders: ['candidate-processing-queue'],
     }),
+    LoggerModule.forFeature({ name: JobsModule.name }),
     StorageModule,
     CompanyModule,
     CandidatesModule,
