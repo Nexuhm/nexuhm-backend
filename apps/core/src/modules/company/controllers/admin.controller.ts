@@ -9,7 +9,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { CompanyDetailsDto } from '../dto/onboarding-details.dto';
+import { CompanyDetailsDto } from '../dto/company-details.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Company } from '../schemas/company.schema';

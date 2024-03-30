@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { UserIntegration } from './user-integration.schema';
 import { CompanyDocument } from '@/core/modules/company/schemas/company.schema';
 import { UserRole } from '../types/user-role.enum';
+import { OnboardingStage } from '../types/onboarding-stage.enum';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -30,6 +31,9 @@ export class User {
     select: false,
   })
   password: string;
+
+  @Prop({ type: Number })
+  onboardingStage: OnboardingStage;
 
   @Prop({
     type: [

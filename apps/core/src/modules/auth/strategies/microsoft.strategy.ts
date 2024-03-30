@@ -35,8 +35,8 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     const user: OAuthCallbackDto = {
       type: 'microsoft',
       email: data.unique_name,
-      firstname: data.family_name,
-      lastname: data.given_name,
+      firstname: data.given_name,
+      lastname: data.family_name,
       accessToken,
       refreshToken,
     };

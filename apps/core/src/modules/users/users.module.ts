@@ -8,6 +8,7 @@ import {
 } from './schemas/user-integration.schema';
 import { CompanyModule } from '../company/company.module';
 import { InviteToken, InviteTokenSchema } from './schemas/invite-token.schema';
+import { OnboardingController } from './controllers/onboarding.controller';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { InviteToken, InviteTokenSchema } from './schemas/invite-token.schema';
     ]),
     CompanyModule,
   ],
+  controllers: [OnboardingController],
   exports: [UsersService, MongooseModule],
   providers: [UsersService],
 })
