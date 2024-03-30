@@ -18,15 +18,15 @@ export class JobApplicationScheduler {
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkNewCandidates() {
     try {
-      const candidates = await this.candidateService
-        .find({
-          processingState: ApplicationProcessingState.New,
-        })
-        .select('videoIndexId');
+      const candidates = await this.candidateService.find({
+        processingState: ApplicationProcessingState.New,
+      });
+
+      console.log(candidates);
 
       const accessToken = await this.videoAnalysisService.getAccessToken();
 
-      console.log(accessToken, candidates);
+      console.log(accessToken);
 
       for (const candidate of candidates) {
         try {
