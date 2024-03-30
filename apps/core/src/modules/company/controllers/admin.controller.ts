@@ -6,6 +6,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -83,7 +84,7 @@ export class CompanyAdminController {
    * @param {UserDocument} user - The user document.
    * @returns {Promise<void>} A Promise representing the result of the update operation.
    */
-  @Put()
+  @Post('/details')
   @ApiBody({ type: CompanyDetailsDto })
   async setCompanyDetails(
     @Body() fields: CompanyDetailsDto,
@@ -93,6 +94,21 @@ export class CompanyAdminController {
 
     if (!company) {
       throw new BadRequestException();
+    }
+
+    if (fields.slug) {
+      const exists = await this.companyModel.findOne({
+        _id: { $ne: company._id },
+        slug: fields.slug,
+      });
+
+      if (exists) {
+        throw new BadRequestException({
+          fields: {
+            slug: 'Company with following namespace exists already',
+          },
+        });
+      }
     }
 
     company.set(fields);

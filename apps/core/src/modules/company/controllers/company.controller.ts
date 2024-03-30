@@ -62,42 +62,4 @@ export class CompanyController {
 
     return jobs;
   }
-
-  /**
-   * Updates the company details for a user.
-   *
-   * @param {number} stage - The stage of onboarding.
-   * @param {CompanyDetailsDto} fields - The updated company details.
-   * @param {UserDocument} user - The user document.
-   * @returns {Promise<void>} A Promise representing the result of the update operation.
-   */
-  @Post('/details')
-  @UseGuards(JwtAuthGuard)
-  async setCompanyDetails(
-    @Body() fields: CompanyDetailsDto,
-    @User() user: UserDocument,
-  ) {
-    const company = await this.companyModel.findById(user.company);
-
-    if (!company) {
-      throw new BadRequestException();
-    }
-
-    if (fields.slug) {
-      const exists = await this.companyModel.findOne({
-        _id: { $ne: company._id },
-        slug: fields.slug,
-      });
-
-      if (exists) {
-        throw new BadRequestException({
-          fields: {
-            slug: 'Company with following namespace exists already',
-          },
-        });
-      }
-    }
-
-    await company.updateOne(fields);
-  }
 }

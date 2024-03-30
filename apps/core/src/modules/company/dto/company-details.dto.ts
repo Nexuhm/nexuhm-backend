@@ -38,6 +38,11 @@ export class CompanyDetailsDto {
   description: string;
 
   @ApiProperty()
+  @IsUrl()
+  @IsOptional()
+  logo: string;
+
+  @ApiProperty()
   @IsString()
   @IsOptional()
   cultureDescription: string;
