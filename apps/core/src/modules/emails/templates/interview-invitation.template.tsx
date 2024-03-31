@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import {
-  MjmlSection,
-  MjmlColumn,
-  MjmlText,
-  render,
-} from 'mjml-react';
+import { MjmlSection, MjmlColumn, MjmlText, render } from 'mjml-react';
 import { MainEmailLayout } from './main-layout.template';
 
 @Injectable()
 export class InterviewInvitationEmailTemplate {
-  render({ firstname, datetime, timezone }) {
+  render({
+    name,
+    companyName,
+    jobTitle,
+    datetime,
+    timezone,
+    interviewers,
+    location,
+    message,
+  }) {
     return render(
       <MainEmailLayout subject="Interview invitation">
         <MjmlSection padding={0}>
@@ -20,11 +24,34 @@ export class InterviewInvitationEmailTemplate {
               padding={25}
               paddingBottom={0}
             >
-              Hi {firstname},
+              Dear {name},
             </MjmlText>
 
             <MjmlText>
-              The interview is scheduled for {datetime} {timezone}.
+              We are please to confirm your interview with {companyName} for the{' '}
+              {jobTitle} position.
+            </MjmlText>
+
+            <MjmlText>Here are the details of your interviews:</MjmlText>
+
+            <MjmlText>
+              <p>
+                <strong>Date:</strong> {datetime}
+              </p>
+
+              <p>
+                <strong>Link:</strong> {location}
+              </p>
+
+              <p>
+                <strong>Interviewers:</strong> {interviewers?.join(', ')}
+              </p>
+
+              {message && (
+                <p>
+                  <strong>Format:</strong> {message}
+                </p>
+              )}
             </MjmlText>
           </MjmlColumn>
         </MjmlSection>

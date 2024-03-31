@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -24,7 +23,6 @@ import {
   RejectParamsDto,
 } from '../dto/candidate.dto';
 import { CandidateHiringService } from '../services/candidate-hiring.service';
-import { MissingIntegrationException } from '@/core/lib/exception/missing-integration.exception';
 import { CandidateNotFoundException } from '../exception/candidate-not-found.exception';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InterviewOptions } from '../candidate.interface';
@@ -88,10 +86,6 @@ export class AdminCandidateHiringController {
     await this.candidateHiringService
       .createMeeting(user, candidateId, interviewOptions)
       .catch((e) => {
-        if (e instanceof MissingIntegrationException) {
-          throw new BadRequestException(e.message);
-        }
-
         if (e instanceof CandidateNotFoundException) {
           throw new NotFoundException(e.message);
         }

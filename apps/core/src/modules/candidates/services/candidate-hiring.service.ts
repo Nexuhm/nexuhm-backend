@@ -4,13 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserIntegration } from '@/core/modules/users/schemas/user-integration.schema';
 import { Model } from 'mongoose';
 import { CandidateService } from './candidate.service';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
-import { MissingIntegrationException } from '@/core/lib/exception/missing-integration.exception';
-import { google } from 'googleapis';
-import { Client } from '@microsoft/microsoft-graph-client';
 import { format } from 'date-fns';
 
 import {
@@ -29,12 +25,11 @@ import { JobOfferEmailTemplate } from '@/core/modules/emails/templates/job-offer
 import { HireEmailTemplate } from '@/core/modules/emails/templates/job-hire.template';
 import { InterviewInvitationEmailTemplate } from '@/core/modules/emails/templates/interview-invitation.template';
 import { EmailService } from '@/core/modules/emails/services/email.service';
+import { EventsService } from '@/core/modules/events/services/events.service';
 
 @Injectable()
 export class CandidateHiringService {
   constructor(
-    @InjectModel(UserIntegration.name)
-    private integrationModel: Model<UserIntegration>,
     @InjectModel(CandidateStage.name)
     private readonly candidateStageModel: Model<CandidateStage>,
     private readonly interviewInvitationTemplate: InterviewInvitationEmailTemplate,
@@ -42,19 +37,23 @@ export class CandidateHiringService {
     private readonly hireEmailTemplate: HireEmailTemplate,
     private readonly offerEmailTemplate: JobOfferEmailTemplate,
     private readonly emailService: EmailService,
+    private readonly eventsService: EventsService,
   ) {}
 
   async createMeeting(
     user: UserDocument,
     candidateId: string,
-    interview: InterviewOptions,
+    eventOptions: InterviewOptions,
   ) {
     const [isInAppliedStage, candidate] = await Promise.all([
       this.candidateStageModel.exists({
         candidate: candidateId,
         stage: RecruitmentStage.Applied,
       }),
-      this.candidateService.findById(candidateId),
+      this.candidateService
+        .findById(candidateId)
+        .populate('company')
+        .populate('job'),
     ]);
 
     if (!isInAppliedStage) {
@@ -65,186 +64,53 @@ export class CandidateHiringService {
       throw new CandidateNotFoundException();
     }
 
-    const integrations = await this.integrationModel.find({
-      _id: {
-        $in: user.integrations,
-      },
-      type: {
-        $in: ['google', 'microsoft'],
-      },
-    });
+    await this.eventsService.createEvent(user, candidate, eventOptions);
 
-    const googleIntegration = integrations.find(
-      (integration) => integration.type == 'google',
-    );
-    const microsoftIntegration = integrations.find(
-      (integration) => integration.type == 'microsoft',
+    await this.candidateService.stageTransition(
+      candidate.id,
+      RecruitmentStage.Interview,
+      eventOptions,
     );
 
-    if (!(googleIntegration || microsoftIntegration)) {
-      throw new MissingIntegrationException(
-        'Missing google and microsoft integration',
-      );
-    }
-
-    if (googleIntegration) {
-      await this.createGoogleCalendarEvent(
-        googleIntegration.accessToken,
-        candidate,
-        interview,
-      );
-    } else if (microsoftIntegration) {
-      await this.createMicrosoftOutlookEvent(
-        microsoftIntegration.accessToken,
-        candidate,
-        interview,
-      );
-    }
+    await this.sendInterviewInvitationEmail(candidate, eventOptions);
 
     await this.candidateService.createNote(
       candidateId,
       user,
-      `Scheduled for ${format(interview.startDate, "dd/MM/yyyy 'at' hh:mm a")}`,
+      `Scheduled for ${format(
+        eventOptions.startDate,
+        "dd/MM/yyyy 'at' hh:mm a",
+      )}`,
     );
-  }
-
-  private async createMicrosoftOutlookEvent(
-    token: string,
-    candidate: CandidateDocument,
-    interview: InterviewOptions,
-  ) {
-    const client = Client.init({
-      authProvider: (done) => {
-        done(null, token);
-      },
-    });
-
-    const meetingEvent = {
-      subject: `Interview Meeting with ${candidate?.firstname} ${candidate?.lastname}`,
-      body: {
-        contentType: 'text',
-        content: interview.message,
-      },
-      start: {
-        dateTime: interview.startDate.toISOString(),
-        timeZone: interview.timezone,
-      },
-      end: {
-        dateTime: interview.endDate.toISOString(),
-        timeZone: interview.timezone,
-      },
-      attendees: [
-        {
-          emailAddress: {
-            address: candidate?.email,
-          },
-        },
-        ...interview.interviewers.map((interviewer) => ({
-          emailAddress: {
-            address: interviewer,
-          },
-        })),
-      ],
-      location: {
-        displayName: interview.location,
-      },
-    };
-
-    await client.api('/me/events').post(meetingEvent);
-
-    await this.candidateService.stageTransition(
-      candidate.id,
-      RecruitmentStage.Interview,
-      interview,
-    );
-
-    await this.sendInterviewInvitationEmail(candidate, interview);
-  }
-
-  private async createGoogleCalendarEvent(
-    token: string,
-    candidate: CandidateDocument,
-    interview: InterviewOptions,
-  ) {
-    const oAuth2Client = new google.auth.OAuth2();
-
-    oAuth2Client.setCredentials({
-      access_token: token,
-    });
-
-    const calendar = google.calendar({
-      version: 'v3',
-      auth: oAuth2Client,
-    });
-
-    const meetingEvent = {
-      summary: `Interview Meeting with ${candidate?.firstname} ${candidate?.lastname}`,
-      description: interview.message,
-      start: {
-        dateTime: interview.startDate.toISOString(),
-        timeZone: interview.timezone,
-      },
-      end: {
-        dateTime: interview.endDate.toISOString(),
-        timeZone: interview.timezone,
-      },
-      attendees: [
-        {
-          email: candidate?.email,
-        },
-        ...interview.interviewers.map((interviewer) => ({
-          email: interviewer,
-        })),
-      ],
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 },
-          { method: 'popup', minutes: 10 },
-        ],
-      },
-      location: interview.location,
-    };
-
-    await calendar.events.insert(
-      {
-        auth: oAuth2Client,
-        calendarId: 'primary',
-        requestBody: meetingEvent,
-      },
-      {
-        responseType: 'json',
-      },
-    );
-
-    await this.candidateService.stageTransition(
-      candidate.id,
-      RecruitmentStage.Interview,
-      interview,
-    );
-
-    await this.sendInterviewInvitationEmail(candidate, interview);
   }
 
   private async sendInterviewInvitationEmail(
     candidate: CandidateDocument,
-    interview: InterviewOptions,
+    eventOptions: InterviewOptions,
   ) {
-    const formattedInterviewDate = interview.startDate.toLocaleString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-      timeZone: interview.timezone,
-    });
+    const formattedInterviewDate = eventOptions.startDate.toLocaleString(
+      'en-US',
+      {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZone: eventOptions.timezone,
+      },
+    );
 
     const interviewInvitationHtml = this.interviewInvitationTemplate.render({
-      firstname: candidate.firstname,
+      name: candidate.firstname,
       datetime: formattedInterviewDate,
-      timezone: interview.timezone,
+      timezone: eventOptions.timezone,
+      interviewers: eventOptions.interviewers,
+      location: eventOptions.location,
+      message: eventOptions.message,
+      companyName: candidate.company.name,
+      jobTitle: candidate.job.title,
     });
 
     await this.emailService.sendEmail({
