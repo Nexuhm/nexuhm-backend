@@ -17,30 +17,68 @@ import {
   StringOutputParser,
 } from '@langchain/core/output_parsers';
 import { ApplicationProcessingState } from '@/core/modules/candidates/schemas/candidate.schema';
+import { WinstonLoggerService } from '@/core/lib/modules/logger/logger.service';
 
 @Injectable()
 export class CandiateProcessingService {
   constructor(
-    @Receiver('candidate-processing-queue')
-    private readonly receiver: ServiceBusReceiver,
+    @Receiver('candidate-video-processing-queue')
+    private readonly videoProcessingReciever: ServiceBusReceiver,
+    @Receiver('candidate-resume-processing-queue')
+    private readonly resumeProcessingReciver: ServiceBusReceiver,
     private readonly candidateService: CandidateService,
     private readonly companyService: CompanyService,
     private readonly jobsService: JobsService,
     private readonly videoAnalyzerService: VideoAnalysisService,
     private readonly httpService: HttpService,
+    private readonly logger: WinstonLoggerService,
   ) {}
 
   onModuleInit() {
-    this.receiver.subscribe({
+    this.resumeProcessingReciver.subscribe({
+      processMessage: async (message) => {
+        const { candidateId } = JSON.parse(message.body);
+        const candidate = await this.candidateService.findById(candidateId);
+        const job = await this.jobsService.findById(candidate?.job);
+        const company = await this.companyService.findById(candidate?.company);
+
+        if (!candidate) {
+          return;
+        }
+
+        const resumeContent = await this.parseFile(candidate.resume);
+
+        const [description, experiences] = await Promise.all([
+          this.getGeneralDescription(
+            job!.description,
+            company!.cultureDescription,
+            resumeContent,
+          ),
+          this.parseExperiences(resumeContent),
+        ]);
+
+        await candidate.updateOne({
+          description,
+          experiences,
+          processingState: ApplicationProcessingState.ResumeProcessed,
+        });
+
+        this.logger.log(`${candidate.email} resume has been processed.`);
+      },
+      processError: async (args) => {
+        console.log(
+          `Error occurred with ${args.entityPath} within ${args.fullyQualifiedNamespace}: `,
+          args.error,
+        );
+      },
+    });
+
+    this.videoProcessingReciever.subscribe({
       processMessage: async (message) => {
         const data = JSON.parse(message.body);
-
         const candidate = await this.candidateService.findById(
           data.candidateId,
         );
-
-        // TODO: remove logs
-        console.log(data, candidate);
 
         const job = await this.jobsService.findById(candidate?.job);
         const company = await this.companyService.findById(job?.company);
@@ -57,20 +95,8 @@ export class CandiateProcessingService {
           );
 
         const resumeContent = await this.parseFile(candidate.resume);
-        const coverLetterContent = await this.parseFile(candidate.coverLetter);
 
-        const [
-          description,
-          videoScore,
-          resumeScore,
-          coverLetterScore,
-          experiences,
-        ] = await Promise.all([
-          this.getGeneralDescription(
-            job!.description,
-            company!.cultureDescription,
-            resumeContent,
-          ),
+        const [videoScore, resumeScore] = await Promise.all([
           this.getVideoScore(
             job!.description,
             company!.cultureDescription,
@@ -81,30 +107,23 @@ export class CandiateProcessingService {
             company!.cultureDescription,
             resumeContent,
           ),
-          this.getCoverLetterScore(
-            job!.description,
-            company!.cultureDescription,
-            coverLetterContent,
-          ),
-          this.parseExperiences(resumeContent),
         ]);
 
-        const cultureScore = this.getCultureScore(
-          coverLetterScore.score,
-          videoScore.score,
+        const score = this.getTotalScore(
+          resumeScore.score,
+          videoScore?.score || 0,
         );
-        const score = this.getTotalScore(resumeScore.score, cultureScore);
 
         await candidate.updateOne({
           score,
-          description,
-          cultureScore,
-          cultureSummary: `${coverLetterScore.summary}\n\n${videoScore.summary}`,
+          cultureScore: score,
+          cultureSummary: videoScore.summary,
           skillScore: resumeScore.score,
           skillSummary: resumeScore.summary,
-          experiences,
           processingState: ApplicationProcessingState.Completed,
         });
+
+        this.logger.log(`${candidate.email}  has been processed.`);
       },
       processError: async (args) => {
         console.log(
@@ -264,76 +283,6 @@ export class CandiateProcessingService {
     return result;
   }
 
-  async getCoverLetterScore(
-    jobDescription: string,
-    companyCulture: string,
-    coverLetter: string,
-  ): Promise<any> {
-    const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-1106',
-      modelKwargs: {
-        response_format: {
-          type: 'json_object',
-        },
-      },
-      temperature: 0,
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
-
-    const prompt = ChatPromptTemplate.fromMessages([
-      [
-        'system',
-        `
-          As an experienced recruiter, your task is to evaluate the candidates' cover letter and conduct an analysis focusing on the mentioned experience and skills.
-          You will receive details of the job description and the company culture.
-
-          Your scoring should reflect the alignment of the candidates with the job description and the skills required for the positions. 
-          Assign scores ranging from 1 to 10.
-        
-          STEPS.
-
-          1. Analyse resume to find out key features and details related to candidate.
-
-          2. Create a bullet points for each criteria for scoring.
-
-          3. Return JSON output in the following format:
-        
-          SCHEMA:
-          -------
-          {{
-            score: float, // candidate's video score,
-            summary: string, // a brief explanation of the criteria you used to determine the score
-          }}
-        `,
-      ],
-      [
-        'user',
-        `
-        JOB DESCRIPTION:
-        ---------------
-        {jobDescription}
-
-        COMPANY CULTURE:
-        ---------------
-        {companyCulture}
-
-        COVER LETTER:
-        {coverLetter}
-      `,
-      ],
-    ]);
-
-    const chain = prompt.pipe(model).pipe(new JsonOutputParser());
-
-    const result = await chain.invoke({
-      jobDescription,
-      companyCulture,
-      coverLetter,
-    });
-
-    return result;
-  }
-
   async getGeneralDescription(
     jobDescription: string,
     companyCulture: string,
@@ -479,14 +428,18 @@ export class CandiateProcessingService {
   }
 
   async parseFile(fileUrl: string) {
-    const format = path.extname(fileUrl);
+    try {
+      const format = path.extname(fileUrl);
 
-    if (format.startsWith('.docx')) {
-      return this.parseDocx(fileUrl);
-    }
+      if (format.startsWith('.docx')) {
+        return this.parseDocx(fileUrl);
+      }
 
-    if (format.startsWith('.pdf')) {
-      return this.parsePdf(fileUrl);
+      if (format.startsWith('.pdf')) {
+        return this.parsePdf(fileUrl);
+      }
+    } catch (err) {
+      this.logger.warn(err);
     }
 
     return null;

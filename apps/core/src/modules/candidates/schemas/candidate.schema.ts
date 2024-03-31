@@ -25,7 +25,7 @@ export enum RecruitmentStage {
 
 export enum ApplicationProcessingState {
   New = 'new',
-  Processing = 'processing',
+  ResumeProcessed = 'resume-processed',
   Completed = 'completed',
 }
 

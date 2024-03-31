@@ -5,16 +5,21 @@ import { CandidatesModule } from '@/core/modules/candidates/candidates.module';
 import { JobsModule } from '@/core/modules/jobs/jobs.module';
 import { HttpModule } from '@nestjs/axios';
 import { CompanyModule } from '@/core/modules/company/company.module';
+import { LoggerModule } from '@/core/lib/modules/logger/logger.module';
 
 @Module({
   imports: [
     AzureServiceBusModule.forFeature({
-      receivers: ['candidate-processing-queue'],
+      receivers: [
+        'candidate-video-processing-queue',
+        'candidate-resume-processing-queue',
+      ],
     }),
     HttpModule,
     CandidatesModule,
     JobsModule,
     CompanyModule,
+    LoggerModule.forFeature({ name: CandidateProcessingModule.name }),
   ],
   controllers: [],
   providers: [CandiateProcessingService],

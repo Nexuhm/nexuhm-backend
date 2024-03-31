@@ -6,7 +6,10 @@ import { CandidatesModule } from '@/core/modules/candidates/candidates.module';
 @Module({
   imports: [
     AzureServiceBusModule.forFeature({
-      senders: ['candidate-processing-queue'],
+      senders: [
+        'candidate-video-processing-queue',
+        'candidate-resume-processing-queue',
+      ],
     }),
     CandidatesModule,
   ],

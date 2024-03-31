@@ -11,22 +11,35 @@ export class JobApplicationScheduler {
   constructor(
     private readonly candidateService: CandidateService,
     private readonly videoAnalysisService: VideoAnalysisService,
-    @Sender('candidate-processing-queue')
-    private readonly sender: ServiceBusSender,
+    @Sender('candidate-video-processing-queue')
+    private readonly videoQueueSender: ServiceBusSender,
+    @Sender('candidate-resume-processing-queue')
+    private readonly resumeQueueSender: ServiceBusSender,
   ) {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
-  async checkNewCandidates() {
+  async checkPendingResumes() {
+    const candidates = await this.candidateService.find({
+      processingState: ApplicationProcessingState.New,
+    });
+
+    for (const candidate of candidates) {
+      await this.resumeQueueSender.sendMessages({
+        body: JSON.stringify({
+          candidateId: candidate._id,
+        }),
+      });
+    }
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async checkPendingVideos() {
     try {
       const candidates = await this.candidateService.find({
-        processingState: ApplicationProcessingState.New,
+        processingState: ApplicationProcessingState.ResumeProcessed,
       });
 
-      console.log(candidates);
-
       const accessToken = await this.videoAnalysisService.getAccessToken();
-
-      console.log(accessToken);
 
       for (const candidate of candidates) {
         try {
@@ -35,11 +48,8 @@ export class JobApplicationScheduler {
             accessToken,
           );
 
-          // TODO: remove logs
-          console.log(candidate, videoIndex);
-
           if (videoIndex.state === 'Processed') {
-            await this.sender.sendMessages({
+            await this.videoQueueSender.sendMessages({
               body: JSON.stringify({
                 candidateId: candidate._id,
               }),
