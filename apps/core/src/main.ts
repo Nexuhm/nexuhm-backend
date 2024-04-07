@@ -1,17 +1,24 @@
 import 'dotenv/config';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import * as Sentry from '@sentry/node';
 import * as basicAuth from 'express-basic-auth';
 import * as cookieParser from 'cookie-parser';
 import { WinstonLoggerService } from './lib/modules/logger/logger.service';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { SentryFilter } from './lib/filters/sentry.filter';
 
 async function bootstrap() {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENVIRONMENT,
+  });
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy', 1);
@@ -26,6 +33,14 @@ async function bootstrap() {
       /^https:\/\/[a-z0-9.-]+\.nexuhm\.com$/,
     ],
     credentials: true,
+  });
+
+  // add Sentry exception filter
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new SentryFilter(httpAdapter));
+
+  app.use('/debug-sentry', function (req) {
+    throw new Error('Sentry error!');
   });
 
   app.useGlobalPipes(
