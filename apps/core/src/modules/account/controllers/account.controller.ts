@@ -21,6 +21,7 @@ export class AccountController {
   @UseGuards(JwtAuthGuard)
   getDetails(@User() user: UserDocument) {
     return {
+      id: user.id,
       email: user.email,
       picture: user.picture,
       firstname: user.firstname,

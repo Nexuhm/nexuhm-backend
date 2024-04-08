@@ -7,7 +7,6 @@ import {
   UserIntegrationSchema,
 } from './schemas/user-integration.schema';
 import { CompanyModule } from '../company/company.module';
-import { InviteToken, InviteTokenSchema } from './schemas/invite-token.schema';
 import { OnboardingController } from './controllers/onboarding.controller';
 
 @Module({
@@ -20,10 +19,6 @@ import { OnboardingController } from './controllers/onboarding.controller';
       {
         name: UserIntegration.name,
         useFactory: () => UserIntegrationSchema,
-      },
-      {
-        name: InviteToken.name,
-        useFactory: () => InviteTokenSchema,
       },
     ]),
     CompanyModule,

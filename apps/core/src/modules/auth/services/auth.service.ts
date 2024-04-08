@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   InviteToken,
   InviteTokenDocument,
-} from '@/core/modules/users/schemas/invite-token.schema';
+} from '@/core/modules/team/schemas/invite-token.schema';
 import { Model } from 'mongoose';
 import { generateSlug } from 'random-word-slugs';
 import { toPossessive } from '@/core/lib/utils';

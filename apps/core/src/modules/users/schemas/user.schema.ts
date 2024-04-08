@@ -59,6 +59,9 @@ export class User {
 
   @Prop({ type: mongoose.Schema.Types.Mixed })
   metaData: UserMetaData;
+
+  @Prop()
+  createdAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
