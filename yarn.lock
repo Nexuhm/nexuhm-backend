@@ -6736,6 +6736,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"https-proxy-agent@npm:5.0.0":
+  version: 5.0.0
+  resolution: "https-proxy-agent@npm:5.0.0"
+  dependencies:
+    agent-base: "npm:6"
+    debug: "npm:4"
+  checksum: 10c0/670c04f7f0effb5a449c094ea037cbcfb28a5ab93ed22e8c343095202cc7288027869a5a21caf4ee3b8ea06f9624ef1e1fc9044669c0fd92617654ff39f30806
+  languageName: node
+  linkType: hard
+
 "https-proxy-agent@npm:^5.0.0":
   version: 5.0.1
   resolution: "https-proxy-agent@npm:5.0.1"
@@ -9081,6 +9091,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mixpanel@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "mixpanel@npm:0.18.0"
+  dependencies:
+    https-proxy-agent: "npm:5.0.0"
+  checksum: 10c0/690f9fcf95bcd0d76dc50bb49bcbdcc7ea8be952d53138e28ffea305267fdac4df1f0bc8e59b012a9d3d8597e47c0c74d98c400b75676b3b3a78a53c859991b9
+  languageName: node
+  linkType: hard
+
 "mjml-accordion@npm:4.15.3":
   version: 4.15.3
   resolution: "mjml-accordion@npm:4.15.3"
@@ -9848,6 +9867,7 @@ __metadata:
     langchain: "npm:^0.1.25"
     lint-staged: "npm:^15.2.0"
     mammoth: "npm:^1.7.1"
+    mixpanel: "npm:^0.18.0"
     mjml: "npm:^4.15.3"
     mjml-react: "npm:^2.0.8"
     mongoose: "npm:^8.0.3"

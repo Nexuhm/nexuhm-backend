@@ -4,6 +4,6 @@
     "declaration": false,
     "outDir": "../../dist/apps/scheduler"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../../packages/typings/global.d.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

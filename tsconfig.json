@@ -19,12 +19,9 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/core/*": [
-        "./apps/core/src/*"
-      ],
-      "@/bg-tasks/*": [
-        "./apps/bg-tasks/src/*"
-      ]
+      "@/core/*": ["./apps/core/src/*"],
+      "@/bg-tasks/*": ["./apps/bg-tasks/src/*"],
+      "@/scheduler/*": ["./apps/scheduler/src/*"]
     }
   }
 }

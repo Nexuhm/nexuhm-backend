@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@/core/modules/users/services/users.service';
 import { SignUpDto } from '../dto/signup.dto';
@@ -15,6 +15,9 @@ import { Model } from 'mongoose';
 import { generateSlug } from 'random-word-slugs';
 import { toPossessive } from '@/core/lib/utils';
 import { UserRole } from '../../users/types/user-role.enum';
+import { AnalyticsEvents } from '../../analytics/analytics-events.enum';
+import { mixpanelProvider } from '../../analytics/mixpanel.provider';
+import { Mixpanel } from 'mixpanel';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +27,7 @@ export class AuthService {
     private companyService: CompanyService,
     @InjectModel(InviteToken.name)
     private inviteModelToken: Model<InviteTokenDocument>,
+    @Inject(mixpanelProvider) private mixpanel: Mixpanel,
   ) {}
 
   async signUp(fields: SignUpDto) {
@@ -120,6 +124,12 @@ export class AuthService {
 
     // Log in the user and generate authentication tokens.
     const result = await this.login(user);
+
+    this.mixpanel.track(AnalyticsEvents.Login, {
+      distinct_id: user.id,
+      strategy: 'oauth',
+      provider: fields.type,
+    });
 
     // Return the result containing user information and tokens.
     return result;

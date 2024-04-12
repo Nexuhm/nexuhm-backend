@@ -22,6 +22,7 @@ import { PasswordResetController } from './controllers/password-reset.controller
 import { EmailsModule } from '../emails/emails.module';
 import { CompanyModule } from '../company/company.module';
 import { TeamModule } from '../team/team.module';
+import { AnalytcisModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { TeamModule } from '../team/team.module';
     TeamModule,
     CompanyModule,
     EmailsModule,
+    AnalytcisModule,
   ],
   controllers: [
     AuthController,
