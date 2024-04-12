@@ -60,7 +60,6 @@ export class CompanyAdminController {
     const careersPage = await this.careersPageModel.findOneAndUpdate(
       { company },
       {
-        company,
         ...body,
       },
       {
