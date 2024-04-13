@@ -3,6 +3,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { JobPostingState } from '../types/job-posting-state.enum';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
 import { CompanyDocument } from '@/core/modules/company/schemas/company.schema';
+import {
+  ScreeningQuestion,
+  ScreeningQuestionSchema,
+} from './screening-question.schema';
+import { JobSalary, JobSalarySchema } from './job-salary.schema';
 
 export type JobPostingDocument = HydratedDocument<JobPosting>;
 
@@ -30,6 +35,9 @@ export class JobPosting {
   description: string;
 
   @Prop()
+  code: string;
+
+  @Prop()
   employmentType: string;
 
   @Prop()
@@ -38,8 +46,11 @@ export class JobPosting {
   @Prop()
   content: string;
 
-  @Prop({ type: mongoose.Schema.Types.Mixed })
-  salary: any;
+  @Prop({ type: JobSalarySchema })
+  salary: JobSalary;
+
+  @Prop({ type: [ScreeningQuestionSchema] })
+  screeningQuestions: mongoose.Types.DocumentArray<ScreeningQuestion>;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
