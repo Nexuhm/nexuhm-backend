@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  LoggerService,
   NotFoundException,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
