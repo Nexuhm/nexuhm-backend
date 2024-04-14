@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ScreeingQuestionType } from '@/core/modules/jobs/schemas/screening-question.schema';
 
 @Schema()
 export class ScreeningQuestionAnswer {
@@ -10,6 +11,9 @@ export class ScreeningQuestionAnswer {
 
   @Prop()
   value: string;
+
+  @Prop({ type: String })
+  type: ScreeingQuestionType;
 }
 
 export const ScreeningQuestionAnswerSchema = SchemaFactory.createForClass(

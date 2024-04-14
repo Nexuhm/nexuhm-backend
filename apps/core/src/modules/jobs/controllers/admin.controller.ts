@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JobsService } from '../services/jobs.service';
 import { User } from '@/core/lib/decorators/user.decorator';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
@@ -8,6 +16,7 @@ import { JobGenerationDto } from '../dto/job-generation.dto';
 import { JobPostingState } from '../types/job-posting-state.enum';
 import slugify from 'slugify';
 import mongoose from 'mongoose';
+import { UserRole } from '../../users/types/user-role.enum';
 
 @ApiTags('Jobs Controller')
 @Controller('/admin/jobs')
@@ -56,6 +65,28 @@ export class JobsAdminController {
       slug: `${slug}-${objectId.toString().slice(-6)}`,
       state: JobPostingState.Draft,
       company: user.company,
+    });
+  }
+
+  @Post('/:id')
+  @ApiOperation({ description: 'Edit job posting draft' })
+  @ApiBearerAuth()
+  async editJobPosting(
+    @User() user: UserDocument,
+    @Body() body,
+    @Param('id') id: string,
+  ) {
+    const job = await this.jobsService.findById(id);
+
+    if (
+      !user.roles.includes(UserRole.Owner) ||
+      !job?.company.equals(user.company)
+    ) {
+      throw new BadRequestException();
+    }
+
+    return this.jobsService.findByIdAndUpdate(id, body, {
+      new: true,
     });
   }
 

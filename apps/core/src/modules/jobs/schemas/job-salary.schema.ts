@@ -5,7 +5,7 @@ export type JobSalaryDocument = HydratedDocument<JobSalary>;
 
 export type SalaryFrequencyType = 'yearly' | 'monthly' | 'weekly';
 
-@Schema()
+@Schema({ _id: false })
 export class JobSalary {
   @Prop()
   min: number;

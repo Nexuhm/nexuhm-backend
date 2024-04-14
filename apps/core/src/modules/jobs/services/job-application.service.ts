@@ -57,6 +57,7 @@ export class JobsApplicationService {
       company: job.company,
       screeningQuestions: job.screeningQuestions.map((item, index) => ({
         question: item._id,
+        type: item.type,
         value: application.screeningQuestions[index],
       })),
     });
