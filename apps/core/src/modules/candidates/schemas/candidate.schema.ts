@@ -3,6 +3,10 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { JobPostingDocument } from '@/core/modules/jobs/schemas/job-posting.schema';
 import { CandidateNote } from './candidate-note.schema';
 import { CompanyDocument } from '@/core/modules/company/schemas/company.schema';
+import {
+  ScreeningQuestionAnswer,
+  ScreeningQuestionAnswerSchema,
+} from './screening-question-answer.schema';
 
 export type CandidateDocument = HydratedDocument<Candidate>;
 
@@ -62,6 +66,9 @@ export class Candidate {
     ],
   })
   stage: RecruitmentStage;
+
+  @Prop({ type: [ScreeningQuestionAnswerSchema] })
+  screeningQuestions: mongoose.Types.ArraySubdocument<ScreeningQuestionAnswer>;
 
   @Prop()
   location: string;

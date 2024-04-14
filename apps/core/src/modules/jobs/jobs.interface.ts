@@ -3,4 +3,5 @@ export class JobApplicationOptions {
   firstname: string;
   lastname: string;
   location: string;
+  screeningQuestions: string[];
 }

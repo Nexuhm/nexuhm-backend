@@ -24,4 +24,8 @@ export class JobApplicationOptionsDto implements JobApplicationOptions {
   @IsString()
   @ApiProperty()
   location: string;
+
+  @IsString({ each: true })
+  @ApiProperty()
+  screeningQuestions: string[];
 }

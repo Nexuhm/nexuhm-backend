@@ -51,11 +51,15 @@ export class JobsApplicationService {
     }
 
     const candidate = await this.candidateService.create({
+      job,
       firstname: application.firstname,
       lastname: application.lastname,
       email: application.email,
       company: job.company,
-      job,
+      screeningQuestions: job.screeningQuestions.map((item, index) => ({
+        question: item._id,
+        value: application.screeningQuestions[index],
+      })),
     });
 
     const suffix = candidate._id.toString().substring(0, 5);
@@ -78,6 +82,7 @@ export class JobsApplicationService {
       const client = await this.azureStorageService.uploadBlob(
         filePath,
         file.buffer,
+        file.mimetype,
       );
 
       candidate.set(fieldName, client.url);

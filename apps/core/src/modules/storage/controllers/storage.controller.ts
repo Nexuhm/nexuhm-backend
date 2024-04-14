@@ -34,11 +34,11 @@ export const multerConfig = {
   }),
   // Optionally, you can add file size limits, file filter functions etc.
   limits: {
-    fileSize: 1024 * 1024 * 5, // for example, limiting file size to 5MB
+    fileSize: 1024 * 1024 * 15, // for example, limiting file size to 5MB
   },
   fileFilter: (req, file, cb) => {
     // You can reject a file in case you want to filter out file types, for instance
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|mov|avi)$/)) {
       // Allow image formats only
       cb(null, true);
     } else {
@@ -67,18 +67,21 @@ export class MediaController {
   ) {
     try {
       const { enableCropping, filename, folder = '/' } = req.body;
+      let fileBlob = await fs.readFile(file.path);
 
-      const imageBuffer = enableCropping
-        ? await cropImage(file, req.body)
-        : await fs.readFile(file.path);
+      if (file.mimetype.startsWith('image/')) {
+        const imageBuffer = enableCropping
+          ? await cropImage(file, req.body)
+          : await fs.readFile(file.path);
 
-      const compressedImage = await compressImage(imageBuffer);
+        fileBlob = await compressImage(imageBuffer);
+      }
 
       // Azure Blob Storage upload
       const blobName = filename || file.filename;
       const blockBlobClient = await this.azureStorageService.uploadBlob(
         path.join(folder, blobName),
-        compressedImage,
+        fileBlob,
         file.mimetype,
       );
 
