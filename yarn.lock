@@ -87,6 +87,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure-rest/core-client@npm:^1.1.7":
+  version: 1.4.0
+  resolution: "@azure-rest/core-client@npm:1.4.0"
+  dependencies:
+    "@azure/abort-controller": "npm:^2.0.0"
+    "@azure/core-auth": "npm:^1.3.0"
+    "@azure/core-rest-pipeline": "npm:^1.5.0"
+    "@azure/core-tracing": "npm:^1.0.1"
+    "@azure/core-util": "npm:^1.0.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/be389a5ba39f97d09f9a927c07caac2a6dc8e607bcdcf1b81f25c43ea78192b3d6414af79962531948c14314edc1363aead27fbe96a8a93b41cfc9b297c2e2e9
+  languageName: node
+  linkType: hard
+
 "@azure/abort-controller@npm:^1.0.0":
   version: 1.1.0
   resolution: "@azure/abort-controller@npm:1.1.0"
@@ -241,6 +255,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/core-rest-pipeline@npm:^1.13.0, @azure/core-rest-pipeline@npm:^1.5.0":
+  version: 1.15.2
+  resolution: "@azure/core-rest-pipeline@npm:1.15.2"
+  dependencies:
+    "@azure/abort-controller": "npm:^2.0.0"
+    "@azure/core-auth": "npm:^1.4.0"
+    "@azure/core-tracing": "npm:^1.0.1"
+    "@azure/core-util": "npm:^1.3.0"
+    "@azure/logger": "npm:^1.0.0"
+    http-proxy-agent: "npm:^7.0.0"
+    https-proxy-agent: "npm:^7.0.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/329026130f80f3643ab4e21c8257ef099c70dd48f5164cb3f2430117726a0dcdcca60d7d339abad9cc1ceaab516e3eb71f9f0dd623f23b2eebfd44b748ea9b63
+  languageName: node
+  linkType: hard
+
+"@azure/core-sse@npm:^2.0.0":
+  version: 2.1.2
+  resolution: "@azure/core-sse@npm:2.1.2"
+  dependencies:
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/40c8199caefae6ada133105a445a1c08e7e37b8c6a6691c269e877a7b6edef24cef32d54b8cd10205203155ada43e2a9d7558dc2369f3ae3bbaa92b0fbb69513
+  languageName: node
+  linkType: hard
+
 "@azure/core-tracing@npm:1.0.0-preview.13":
   version: 1.0.0-preview.13
   resolution: "@azure/core-tracing@npm:1.0.0-preview.13"
@@ -267,6 +306,16 @@ __metadata:
     "@azure/abort-controller": "npm:^2.0.0"
     tslib: "npm:^2.2.0"
   checksum: 10c0/a55af1589e0bb03e98fde18fb8c8f36c5e9c135a04750bbe858349e5ec97a0c2f26c9a774dc98e6fbf4649cfc434c504402b820611975bf35fcef292bfee0073
+  languageName: node
+  linkType: hard
+
+"@azure/core-util@npm:^1.4.0":
+  version: 1.9.0
+  resolution: "@azure/core-util@npm:1.9.0"
+  dependencies:
+    "@azure/abort-controller": "npm:^2.0.0"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/6eb6efc8b8401fd6e3b56631e8e9a1dbc23a0048ae3bf498d10163624f805032a7730905465b2ebe95c840e5e939e66bf320448de8df50f66346e89b1295f9e7
   languageName: node
   linkType: hard
 
@@ -311,6 +360,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/logger@npm:^1.0.3":
+  version: 1.1.2
+  resolution: "@azure/logger@npm:1.1.2"
+  dependencies:
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/829c1da363b8fe732ca26326400575dc824e1032974dc499db539e9599e0e4f1b1f4bf936b68329171fece7e2d4bba3ffaaebb35ac60b73db4715c6dc026147a
+  languageName: node
+  linkType: hard
+
 "@azure/msal-browser@npm:^3.5.0":
   version: 3.10.0
   resolution: "@azure/msal-browser@npm:3.10.0"
@@ -335,6 +393,21 @@ __metadata:
     jsonwebtoken: "npm:^9.0.0"
     uuid: "npm:^8.3.0"
   checksum: 10c0/45e88223498cd53163bb23ea92c5368b4101ba78c89da6c684ba0dd7d649733c7145db9ac5a9e964691802b09880c461f4ace0316cb2f357d66c56dde45c9820
+  languageName: node
+  linkType: hard
+
+"@azure/openai@npm:1.0.0-beta.11":
+  version: 1.0.0-beta.11
+  resolution: "@azure/openai@npm:1.0.0-beta.11"
+  dependencies:
+    "@azure-rest/core-client": "npm:^1.1.7"
+    "@azure/core-auth": "npm:^1.4.0"
+    "@azure/core-rest-pipeline": "npm:^1.13.0"
+    "@azure/core-sse": "npm:^2.0.0"
+    "@azure/core-util": "npm:^1.4.0"
+    "@azure/logger": "npm:^1.0.3"
+    tslib: "npm:^2.4.0"
+  checksum: 10c0/7c28b047cdbb05507599264f0ea447af813c95eebb1659e5edc18253ffcba84cf5e314423714c8580538f9d38eab3cd28d93fe43eaba9d12233fcfa005230a16
   languageName: node
   linkType: hard
 
@@ -1588,6 +1661,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@langchain/azure-openai@npm:^0.0.7":
+  version: 0.0.7
+  resolution: "@langchain/azure-openai@npm:0.0.7"
+  dependencies:
+    "@azure/core-auth": "npm:^1.5.0"
+    "@azure/openai": "npm:1.0.0-beta.11"
+    "@langchain/core": "npm:~0.1.9"
+    js-tiktoken: "npm:^1.0.7"
+    zod: "npm:^3.22.3"
+    zod-to-json-schema: "npm:3.20.3"
+  checksum: 10c0/45b48dddb36081cb6c55bf62b3fbddedd1e70b3c5689898ae765203eff36e1cdd387fac51b2dc67afb774017e569d67cc3bbf53cdbff9cdc784eab582592589d
+  languageName: node
+  linkType: hard
+
 "@langchain/community@npm:~0.0.33":
   version: 0.0.34
   resolution: "@langchain/community@npm:0.0.34"
@@ -1891,6 +1978,25 @@ __metadata:
     zod: "npm:^3.22.4"
     zod-to-json-schema: "npm:^3.22.3"
   checksum: 10c0/dc2880bcf185f6fbe7838179bd5ae04144628213c646fcb62b092426e2a590665ae266482ee5efe5abf45fa21cd7127f9a2c398211a08d29290809f1f36d8176
+  languageName: node
+  linkType: hard
+
+"@langchain/core@npm:~0.1.9":
+  version: 0.1.57
+  resolution: "@langchain/core@npm:0.1.57"
+  dependencies:
+    ansi-styles: "npm:^5.0.0"
+    camelcase: "npm:6"
+    decamelize: "npm:1.2.0"
+    js-tiktoken: "npm:^1.0.8"
+    langsmith: "npm:~0.1.7"
+    ml-distance: "npm:^4.0.0"
+    p-queue: "npm:^6.6.2"
+    p-retry: "npm:4"
+    uuid: "npm:^9.0.0"
+    zod: "npm:^3.22.4"
+    zod-to-json-schema: "npm:^3.22.3"
+  checksum: 10c0/8c1de06ac0e70fccd0553ea75af33ae4883c45b90c339c1fc3f057b784b42c4950c20b1936f74319b25e3349fc85c68cfd0b46cb529569ea2bb626c2d875c854
   languageName: node
   linkType: hard
 
@@ -6756,7 +6862,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:^7.0.1":
+"https-proxy-agent@npm:^7.0.0, https-proxy-agent@npm:^7.0.1":
   version: 7.0.4
   resolution: "https-proxy-agent@npm:7.0.4"
   dependencies:
@@ -9809,6 +9915,7 @@ __metadata:
     "@azure/service-bus": "npm:^7.9.4"
     "@azure/storage-blob": "npm:^12.17.0"
     "@commitlint/cli": "npm:^18.4.4"
+    "@langchain/azure-openai": "npm:^0.0.7"
     "@langchain/core": "npm:^0.1.16"
     "@langchain/openai": "npm:^0.0.12"
     "@microsoft/microsoft-graph-client": "npm:^3.0.7"

@@ -68,7 +68,19 @@ export class JobsAdminController {
     });
   }
 
-  @Post('/:id')
+  @Post('/generate')
+  @ApiOperation({
+    description: 'Generate job posting based on given title and description',
+  })
+  @ApiBearerAuth()
+  generateJobPosting(
+    @Body() body: JobGenerationDto,
+    @User() user: UserDocument,
+  ) {
+    return this.jobsService.generateJobPosting(body, user);
+  }
+
+  @Post('/:id/edit')
   @ApiOperation({ description: 'Edit job posting draft' })
   @ApiBearerAuth()
   async editJobPosting(
@@ -99,17 +111,5 @@ export class JobsAdminController {
       { state: body.state },
       { new: true },
     );
-  }
-
-  @Post('/generate')
-  @ApiOperation({
-    description: 'Generate job posting based on given title and description',
-  })
-  @ApiBearerAuth()
-  generateJobPosting(
-    @Body() body: JobGenerationDto,
-    @User() user: UserDocument,
-  ) {
-    return this.jobsService.generateJobPosting(body, user);
   }
 }
