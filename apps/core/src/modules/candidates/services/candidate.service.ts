@@ -120,13 +120,17 @@ export class CandidateService {
     const resumeContent = pdf.text;
 
     const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-0125',
+      modelName: 'gpt-35-turbo-1106',
       modelKwargs: {
         response_format: {
           type: 'json_object',
         },
       },
-      openAIApiKey: process.env.OPENAI_API_KEY,
+      temperature: 0,
+      azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+      azureOpenAIBasePath: process.env.AZURE_OPENAI_BASE_PATH,
+      azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+      azureOpenAIApiDeploymentName: 'job-generator',
     });
 
     const prompt = ChatPromptTemplate.fromMessages([

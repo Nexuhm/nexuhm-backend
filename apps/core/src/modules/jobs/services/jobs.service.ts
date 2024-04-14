@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { JobPosting } from '../schemas/job-posting.schema';
 import { AnyKeys, FilterQuery, Model } from 'mongoose';
 import { JobGenerationDto } from '../dto/job-generation.dto';
-import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { Company } from '@/core/modules/company/schemas/company.schema';
 import { UserDocument } from '@/core/modules/users/schemas/user.schema';
+import { ChatOpenAI } from '@langchain/openai';
 
 @Injectable()
 export class JobsService {
@@ -46,13 +46,16 @@ export class JobsService {
     const company = await this.companyModel.findById(user.company);
 
     const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-1106',
+      modelName: 'gpt-35-turbo-1106',
       modelKwargs: {
         response_format: {
           type: 'json_object',
         },
       },
-      openAIApiKey: process.env.OPENAI_API_KEY,
+      azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+      azureOpenAIBasePath: process.env.AZURE_OPENAI_BASE_PATH,
+      azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+      azureOpenAIApiDeploymentName: 'job-generator',
     });
 
     const prompt = ChatPromptTemplate.fromMessages([
@@ -91,7 +94,7 @@ export class JobsService {
           {{
             title: string // well defined Job Title,
             description: string // brief description of the job, make sure to optimize for SEO.
-            content: string // Generate a MARKDOWN content of the job posting, it should include sections such as Overview, Benefits etc. make sure formatting is well defined and attratcive
+            content: string // Generate a MARKDOWN content of the job posting, it should include sections such as Overview, Benefits etc. make sure formatting is well defined and attratcive, Shouldn't include title at the top.
             employmentType: string /*
               Enum Values:
               full-time-employment,

@@ -155,16 +155,7 @@ export class CandiateProcessingService {
     companyCulture: string,
     videoTranscripts: string,
   ): Promise<any> {
-    const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-1106',
-      modelKwargs: {
-        response_format: {
-          type: 'json_object',
-        },
-      },
-      temperature: 0,
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
+    const model = this.createModel();
 
     const prompt = ChatPromptTemplate.fromMessages([
       [
@@ -218,16 +209,7 @@ export class CandiateProcessingService {
     companyCulture: string,
     resume: string,
   ): Promise<any> {
-    const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-1106',
-      modelKwargs: {
-        response_format: {
-          type: 'json_object',
-        },
-      },
-      temperature: 0,
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
+    const model = this.createModel();
 
     const prompt = ChatPromptTemplate.fromMessages([
       [
@@ -289,9 +271,12 @@ export class CandiateProcessingService {
     resume: string,
   ): Promise<any> {
     const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-1106',
-      openAIApiKey: process.env.OPENAI_API_KEY,
+      modelName: 'gpt-4-1106-Preview',
       temperature: 0,
+      azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+      azureOpenAIBasePath: process.env.AZURE_OPENAI_BASE_PATH,
+      azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+      azureOpenAIApiDeploymentName: 'candidate-analyzer',
     });
 
     const prompt = ChatPromptTemplate.fromMessages([
@@ -335,15 +320,7 @@ export class CandiateProcessingService {
   }
 
   async parseExperiences(resume: string): Promise<any> {
-    const model = new ChatOpenAI({
-      modelName: 'gpt-3.5-turbo-1106',
-      modelKwargs: {
-        response_format: {
-          type: 'json_object',
-        },
-      },
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
+    const model = this.createModel();
 
     const prompt = ChatPromptTemplate.fromMessages([
       [
@@ -443,5 +420,23 @@ export class CandiateProcessingService {
     }
 
     return null;
+  }
+
+  private createModel() {
+    const model = new ChatOpenAI({
+      modelName: 'gpt-4-1106-Preview',
+      modelKwargs: {
+        response_format: {
+          type: 'json_object',
+        },
+      },
+      temperature: 0,
+      azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY,
+      azureOpenAIBasePath: process.env.AZURE_OPENAI_BASE_PATH,
+      azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
+      azureOpenAIApiDeploymentName: 'candidate-analyzer',
+    });
+
+    return model;
   }
 }
