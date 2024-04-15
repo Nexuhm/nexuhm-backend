@@ -44,6 +44,12 @@ async function bootstrap() {
     next();
   });
 
+  app.use('/admin/company/details', (req, res, next) => {
+    console.log(req.body);
+
+    next();
+  });
+
   // app.enableCors({
   //   origin: true,
   //   credentials: true,
