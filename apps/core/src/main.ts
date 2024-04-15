@@ -30,6 +30,7 @@ async function bootstrap() {
     console.log(req.method, req.url);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader(
       'Access-Control-Allow-Methods',
       'GET, POST, PATCH, PUT, DELETE, OPTIONS',
