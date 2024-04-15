@@ -34,11 +34,11 @@ export const multerConfig = {
   }),
   // Optionally, you can add file size limits, file filter functions etc.
   limits: {
-    fileSize: 1024 * 1024 * 15, // for example, limiting file size to 5MB
+    fileSize: 1024 * 1024 * 20, // for example, limiting file size to 5MB
   },
   fileFilter: (req, file, cb) => {
     // You can reject a file in case you want to filter out file types, for instance
-    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|mov|avi)$/)) {
+    if (file.mimetype.match(/\/(jpg|jpeg|png|webp|gif|mp4|mov|avi)$/)) {
       // Allow image formats only
       cb(null, true);
     } else {
