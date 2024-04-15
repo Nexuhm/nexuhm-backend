@@ -26,15 +26,9 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  // app.enableCors({
-  //   origin: '*',
-  //   // origin: [
-  //   //   /^http:\/\/localhost(:\d+)?$/,
-  //   //   /^https:\/\/[a-z0-9.-]+\.nexuhm-local\.com$/,
-  //   //   /^https:\/\/[a-z0-9.-]+\.nexuhm\.com$/,
-  //   // ],
-  //   credentials: true,
-  // });
+  app.enableCors({
+    credentials: true,
+  });
 
   // add Sentry exception filter
   const { httpAdapter } = app.get(HttpAdapterHost);
