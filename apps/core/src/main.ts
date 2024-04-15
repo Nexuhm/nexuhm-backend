@@ -35,10 +35,7 @@ async function bootstrap() {
       'Access-Control-Allow-Methods',
       'GET, POST, PATCH, PUT, DELETE, OPTIONS',
     );
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, Origin, X-Requested-With, Accept',
-    );
+    res.setHeader('Access-Control-Allow-Headers', '*');
 
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
