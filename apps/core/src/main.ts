@@ -47,10 +47,10 @@ async function bootstrap() {
     next();
   });
 
-  app.enableCors({
-    origin: true,
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: true,
+  //   credentials: true,
+  // });
 
   // add Sentry exception filter
   const { httpAdapter } = app.get(HttpAdapterHost);
