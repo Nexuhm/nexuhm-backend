@@ -26,34 +26,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.use((req: Request, res, next) => {
-    console.log(req.method, req.url);
-
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PATCH, PUT, DELETE, OPTIONS',
-    );
-    res.setHeader('Access-Control-Allow-Headers', '*');
-
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-
-    next();
+  app.enableCors({
+    origin: 'http://nexuhm.com',
+    credentials: true,
   });
-
-  app.use('/admin/company/details', (req, res, next) => {
-    console.log(req.body);
-
-    next();
-  });
-
-  // app.enableCors({
-  //   origin: true,
-  //   credentials: true,
-  // });
 
   // add Sentry exception filter
   const { httpAdapter } = app.get(HttpAdapterHost);
@@ -63,18 +39,18 @@ async function bootstrap() {
     throw new Error('Sentry error!');
   });
 
-  // app.useGlobalPipes(
-  //   new ValidationPipe({
-  //     stopAtFirstError: true,
-  //     disableErrorMessages: false,
-  //     transform: true,
-  //     transformOptions: {
-  //       enableImplicitConversion: true,
-  //       exposeDefaultValues: true,
-  //     },
-  //     errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-  //   }),
-  // );
+  app.useGlobalPipes(
+    new ValidationPipe({
+      stopAtFirstError: true,
+      disableErrorMessages: false,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+        exposeDefaultValues: true,
+      },
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+    }),
+  );
 
   // use basic auth for Swagger UI
   app.use(
