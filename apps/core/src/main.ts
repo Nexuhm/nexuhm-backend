@@ -60,18 +60,18 @@ async function bootstrap() {
     throw new Error('Sentry error!');
   });
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      stopAtFirstError: true,
-      disableErrorMessages: false,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-        exposeDefaultValues: true,
-      },
-      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-    }),
-  );
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     stopAtFirstError: true,
+  //     disableErrorMessages: false,
+  //     transform: true,
+  //     transformOptions: {
+  //       enableImplicitConversion: true,
+  //       exposeDefaultValues: true,
+  //     },
+  //     errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+  //   }),
+  // );
 
   // use basic auth for Swagger UI
   app.use(
