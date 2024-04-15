@@ -37,7 +37,7 @@ async function bootstrap() {
     );
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, Origin',
+      'Content-Type, Authorization, Origin, X-Requested-With, Accept',
     );
 
     if (req.method === 'OPTIONS') {
