@@ -91,6 +91,8 @@ export class CompanyAdminController {
   ) {
     const company = await this.companyModel.findById(user.company);
 
+    console.log(company, fields);
+
     if (!company) {
       throw new BadRequestException();
     }
@@ -109,6 +111,8 @@ export class CompanyAdminController {
         });
       }
     }
+
+    console.log(2);
 
     company.set(fields);
     await company.save();
