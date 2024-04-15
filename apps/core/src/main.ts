@@ -27,11 +27,12 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: [
-      /^http:\/\/localhost(:\d+)?$/,
-      /^https:\/\/[a-z0-9.-]+\.nexuhm-local\.com$/,
-      /^https:\/\/[a-z0-9.-]+\.nexuhm\.com$/,
-    ],
+    origin: '*',
+    // origin: [
+    //   /^http:\/\/localhost(:\d+)?$/,
+    //   /^https:\/\/[a-z0-9.-]+\.nexuhm-local\.com$/,
+    //   /^https:\/\/[a-z0-9.-]+\.nexuhm\.com$/,
+    // ],
     credentials: true,
   });
 
