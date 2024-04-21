@@ -17,6 +17,7 @@ import {
 
 interface MainEmailLayoutProps {
   subject: string;
+  disableFooter?: boolean;
   preview?: string;
   children: ReactNode;
 }
@@ -24,6 +25,7 @@ interface MainEmailLayoutProps {
 export function MainEmailLayout({
   subject,
   preview,
+  disableFooter = false,
   children,
 }: MainEmailLayoutProps) {
   return (
@@ -43,7 +45,7 @@ export function MainEmailLayout({
                     font-family: Poppins, sans-serif;
                 }
 
-                p {
+                p, .paragraph {
                     font-size: 1rem;
                     margin-top: 0;
                     margin-bottom: 24px;
@@ -75,7 +77,7 @@ export function MainEmailLayout({
       <MjmlBody cssClass=".body" backgroundColor="#f5f5fe">
         <MjmlWrapper paddingTop={40} paddingBottom={40}>
           <MjmlWrapper cssClass="main-section">
-            <MjmlSection padding={0} textAlign="left">
+            <MjmlSection padding={0} textAlign="left" paddingBottom={30}>
               <MjmlColumn cssClass="logo">
                 <MjmlImage
                   src="https://nexuhmstaging.blob.core.windows.net/assets/images/logo.png"
@@ -93,16 +95,18 @@ export function MainEmailLayout({
               </MjmlColumn>
             </MjmlSection>
 
-            <MjmlSection padding={0}>
-              <MjmlColumn>
-                <MjmlText>
-                  <p>
-                    Should you need to get in contact with us please email
-                    support@nexuhm.com
-                  </p>
-                </MjmlText>
-              </MjmlColumn>
-            </MjmlSection>
+            {!disableFooter && (
+              <MjmlSection padding={0}>
+                <MjmlColumn>
+                  <MjmlText>
+                    <p>
+                      Should you need to get in contact with us please email
+                      support@nexuhm.com
+                    </p>
+                  </MjmlText>
+                </MjmlColumn>
+              </MjmlSection>
+            )}
           </MjmlWrapper>
 
           <MjmlWrapper>

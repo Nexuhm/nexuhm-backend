@@ -10,7 +10,11 @@ import * as Sentry from '@sentry/node';
 import * as basicAuth from 'express-basic-auth';
 import * as cookieParser from 'cookie-parser';
 import { WinstonLoggerService } from './lib/modules/logger/logger.service';
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  ValidationPipe,
+} from '@nestjs/common';
 import { SentryFilter } from './lib/filters/sentry.filter';
 
 async function bootstrap() {
@@ -46,6 +50,28 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
+      exceptionFactory: (errors) => {
+        const messages = errors
+          .map((error) => ({
+            property: error.property,
+            message: Object.keys(error.constraints || {})
+              .map((key) => error.constraints?.[key])
+              .join(', '),
+          }))
+          .reduce(
+            (obj, err) => ({
+              ...obj,
+              [err.property]: err.message,
+            }),
+            {},
+          );
+
+        return new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Validation failed',
+          fields: messages,
+        });
+      },
       stopAtFirstError: true,
       disableErrorMessages: false,
       transform: true,

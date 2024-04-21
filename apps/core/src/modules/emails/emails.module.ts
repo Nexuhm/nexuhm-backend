@@ -5,6 +5,8 @@ import { PasswordResetEmailTemplate } from './templates/password-reset.template'
 import { HireEmailTemplate } from './templates/job-hire.template';
 import { JobOfferEmailTemplate } from './templates/job-offer.template';
 import { InterviewInvitationEmailTemplate } from './templates/interview-invitation.template';
+import { EmailController } from './controllers/email.controller';
+import { MessageTemplate } from './templates/message.template';
 
 @Module({
   exports: [
@@ -22,6 +24,8 @@ import { InterviewInvitationEmailTemplate } from './templates/interview-invitati
     HireEmailTemplate,
     JobOfferEmailTemplate,
     InterviewInvitationEmailTemplate,
+    MessageTemplate,
   ],
+  controllers: [EmailController],
 })
 export class EmailsModule {}
