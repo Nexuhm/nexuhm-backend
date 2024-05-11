@@ -21,6 +21,7 @@ namespace NodeJS {
     AUTH_CALLBACK_SECRET: string;
     AUTH_CALLBACK_URL: string;
     PASSWORD_RESET_URL: string;
+    INVITATION_URL: string;
     BASE_URL: string;
     AZURE_SUBSCRIPTION_ID: string;
     AZURE_VIDEO_INDEXER_ACCOUNT_ID: string;

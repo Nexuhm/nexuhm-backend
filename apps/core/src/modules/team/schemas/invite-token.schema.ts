@@ -37,7 +37,7 @@ export class InviteToken {
 
   @Prop({
     type: String,
-    default: randomUUID,
+    default: () => randomUUID(),
     required: true,
   })
   token: string;

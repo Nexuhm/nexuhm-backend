@@ -69,6 +69,10 @@ export class AuthService {
       },
     });
 
+    if (inviteToken) {
+      await inviteToken.deleteOne();
+    }
+
     const result = await this.login(user);
 
     return result;

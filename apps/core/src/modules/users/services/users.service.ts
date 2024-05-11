@@ -31,10 +31,7 @@ export class UsersService {
     return this.userModel.findOne({ email }, projection);
   }
 
-  findById(
-    _id: string,
-    projection?: ProjectionType<User>,
-  ): Promise<UserDocument | null> {
+  findById(_id: string, projection?: ProjectionType<User>) {
     return this.userModel.findById(_id, projection);
   }
 

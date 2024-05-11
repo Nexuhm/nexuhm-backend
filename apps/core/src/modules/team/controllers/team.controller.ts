@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Get,
   Param,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -57,7 +58,7 @@ export class TeamController {
     };
   }
 
-  @Get('/:member/remove')
+  @Post('/members/:member/remove')
   async removeMembers(
     @User() user: UserDocument,
     @Param('company') companyId: string,

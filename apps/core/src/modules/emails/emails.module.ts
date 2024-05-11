@@ -7,6 +7,7 @@ import { JobOfferEmailTemplate } from './templates/job-offer.template';
 import { InterviewInvitationEmailTemplate } from './templates/interview-invitation.template';
 import { EmailController } from './controllers/email.controller';
 import { MessageTemplate } from './templates/message.template';
+import { TeamInvitationEmailTemplate } from './templates/team-invitation.template';
 
 @Module({
   exports: [
@@ -16,6 +17,7 @@ import { MessageTemplate } from './templates/message.template';
     HireEmailTemplate,
     JobOfferEmailTemplate,
     InterviewInvitationEmailTemplate,
+    TeamInvitationEmailTemplate,
   ],
   providers: [
     EmailService,
@@ -24,6 +26,7 @@ import { MessageTemplate } from './templates/message.template';
     HireEmailTemplate,
     JobOfferEmailTemplate,
     InterviewInvitationEmailTemplate,
+    TeamInvitationEmailTemplate,
     MessageTemplate,
   ],
   controllers: [EmailController],

@@ -5,8 +5,8 @@ import { UsersModule } from '../users/users.module';
 import { TeamController } from './controllers/team.controller';
 import { InviteToken, InviteTokenSchema } from './schemas/invite-token.schema';
 import { TeamService } from './services/team.service';
-import { InvitesService } from './services/invites.service';
 import { InvitesController } from './controllers/invites.controller';
+import { EmailsModule } from '../emails/emails.module';
 
 @Module({
   imports: [
@@ -16,11 +16,12 @@ import { InvitesController } from './controllers/invites.controller';
         useFactory: () => InviteTokenSchema,
       },
     ]),
+    EmailsModule,
     CompanyModule,
     UsersModule,
   ],
   controllers: [TeamController, InvitesController],
   exports: [MongooseModule],
-  providers: [TeamService, InvitesService],
+  providers: [TeamService],
 })
 export class TeamModule {}
