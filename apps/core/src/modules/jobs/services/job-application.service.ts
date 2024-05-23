@@ -123,6 +123,7 @@ export class JobsApplicationService {
     const result = this.applicationSuccessTemplate.render({
       logo: job?.company.logo,
       username: `${application.firstname} ${application.lastname}`,
+      companyName: job?.company.name,
     });
 
     await this.emailServive.sendEmail({

@@ -18,7 +18,7 @@ import {
 
 @Injectable()
 export class ApplicationSuccessTemplate {
-  render({ logo, username }) {
+  render({ logo, username, companyName }) {
     return render(
       <Mjml>
         <MjmlHead>
@@ -88,8 +88,9 @@ export class ApplicationSuccessTemplate {
                     <p style={{ marginBottom: 16 }}>Dear, {username}</p>
                     <p style={{ marginBottom: 16 }}>
                       Thank you for your interest in the UX Designer position at
-                      Discord. We have successfully received your application
-                      and our recruitment team is ready to review it.
+                      {companyName}. We have successfully received your
+                      application and our recruitment team is ready to review
+                      it.
                     </p>
                     <p>
                       We take pride in selected the best for our business, so It
@@ -113,12 +114,12 @@ export class ApplicationSuccessTemplate {
                       <br />
                       Recruitment Team
                       <br />
-                      Discord
+                      {companyName}
                     </p>
 
                     <p>
                       Should you need to get in contact with us please email
-                      support@discord.com
+                      hello@nexuhm.com
                     </p>
                   </MjmlText>
                 </MjmlColumn>
@@ -133,7 +134,6 @@ export class ApplicationSuccessTemplate {
                       Copyright © {new Date().getFullYear()} Company. All
                       rights reserved.
                     </p>
-                    <p>Some Address AA1 1AA</p>
                   </MjmlText>
                 </MjmlColumn>
               </MjmlSection>
