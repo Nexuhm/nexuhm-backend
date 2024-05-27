@@ -34,6 +34,13 @@ export class CareersPage {
 
   @Prop({ type: [mongoose.Schema.Types.Mixed] })
   companyBenefits: string[];
+
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  socialLinks: {
+    linkedin: string;
+    twitter: string;
+    facebook: string;
+  };
 }
 
 export const CareersPageSchema = SchemaFactory.createForClass(CareersPage);
