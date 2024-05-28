@@ -6,4 +6,7 @@ export class JobGenerationDto {
 
   @ApiProperty()
   description: string;
+
+  @ApiProperty()
+  locale: string;
 }

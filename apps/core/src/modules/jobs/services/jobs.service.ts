@@ -84,10 +84,12 @@ export class JobsService {
 
           REQUIREMENTS:
           ------------
-          You SHOULD NOT make up any stuff that isn't related to given \`title\` and \`description\`.
-          You SHOULD follow user instructions to generate job description.
-          YOU CAN NOT generate anything illegal or harmful.
-          Only return the JSON fields with values. i.e., DROP all fields with null and "". 
+          - You SHOULD USE given locale to generate job description. 
+            I.e. if locale is "en-US" then generate job description in US English, if locale is "en-GB" then generate job description in UK English.
+          - You SHOULD NOT make up any stuff that isn't related to given \`title\` and \`description\`.
+          - You SHOULD follow user instructions to generate job description.
+          - YOU CAN NOT generate anything illegal or harmful.
+          - Only return the JSON fields with values. i.e., DROP all fields with null and "". 
 
           SCHEMA:
           -------
@@ -121,7 +123,7 @@ export class JobsService {
         `
         COMPANY DESCRIPTION:
         --------------------
-        {description}
+        {companyDescription}
 
         COMPANY CULTURE:
         ---------------
@@ -132,6 +134,7 @@ export class JobsService {
 
         Title: {title}
         Description: {description}
+        Locale: {locale}
       `,
       ],
     ]);
@@ -141,7 +144,7 @@ export class JobsService {
     const result = await chain.invoke({
       ...fields,
       cultureDescription: company?.cultureDescription,
-      description: company?.description,
+      companyDescription: company?.description,
     });
 
     return result;

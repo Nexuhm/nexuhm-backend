@@ -10,6 +10,7 @@ export class JobSalary {
   @Prop()
   min: number;
 
+  @Prop()
   max: number;
 
   @Prop()
