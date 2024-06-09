@@ -32,6 +32,7 @@ export class JobApplicationScheduler {
     }
   }
 
+  // TODO: Uncomment this when the video processing logic has been defined
   @Cron(CronExpression.EVERY_MINUTE)
   async checkPendingVideos() {
     try {

@@ -57,10 +57,19 @@ export class CandiateProcessingService {
           this.parseExperiences(resumeContent),
         ]);
 
+        const resumeScore = await this.getResumeScore(
+          job!.description,
+          company!.cultureDescription,
+          resumeContent,
+        );
+
         await candidate.updateOne({
           description,
           experiences,
-          processingState: ApplicationProcessingState.ResumeProcessed,
+          score: resumeScore.score,
+          skillScore: resumeScore.score,
+          skillSummary: resumeScore.summary,
+          processingState: ApplicationProcessingState.New,
         });
 
         this.logger.log(`${candidate.email} resume has been processed.`);
