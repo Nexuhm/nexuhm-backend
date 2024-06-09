@@ -69,7 +69,7 @@ export class CandiateProcessingService {
           score: resumeScore.score,
           skillScore: resumeScore.score,
           skillSummary: resumeScore.summary,
-          processingState: ApplicationProcessingState.New,
+          processingState: ApplicationProcessingState.Completed,
         });
 
         this.logger.log(`${candidate.email} resume has been processed.`);
