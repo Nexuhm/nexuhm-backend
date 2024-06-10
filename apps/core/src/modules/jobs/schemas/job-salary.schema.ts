@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type JobSalaryDocument = HydratedDocument<JobSalary>;
 
-export type SalaryFrequencyType = 'yearly' | 'monthly' | 'weekly';
+export type SalaryFrequencyType = 'yearly' | 'monthly' | 'weekly' | 'hourly';
 
 @Schema({ _id: false })
 export class JobSalary {

@@ -1,13 +1,7 @@
 import { Receiver } from '@/core/lib/modules/azure-service-bus/azure-service-bus.decorator';
 import { CandidateService } from '@/core/modules/candidates/services/candidate.service';
-import { VideoAnalysisService } from '@/core/modules/candidates/services/video-analysis.service';
 import { ServiceBusReceiver } from '@azure/service-bus';
 import { Injectable } from '@nestjs/common';
-import * as pdfParse from 'pdf-parse';
-import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
-import * as mammoth from 'mammoth';
-import * as path from 'path';
 import { CompanyService } from '@/core/modules/company/services/company.service';
 import { JobsService } from '@/core/modules/jobs/services/jobs.service';
 import { ChatOpenAI } from '@langchain/openai';
@@ -18,20 +12,18 @@ import {
 } from '@langchain/core/output_parsers';
 import { ApplicationProcessingState } from '@/core/modules/candidates/schemas/candidate.schema';
 import { WinstonLoggerService } from '@/core/lib/modules/logger/logger.service';
+import { FileProcessingService } from './file-processing.service';
 
 @Injectable()
 export class CandiateProcessingService {
   constructor(
-    @Receiver('candidate-video-processing-queue')
-    private readonly videoProcessingReciever: ServiceBusReceiver,
     @Receiver('candidate-resume-processing-queue')
     private readonly resumeProcessingReciver: ServiceBusReceiver,
     private readonly candidateService: CandidateService,
     private readonly companyService: CompanyService,
     private readonly jobsService: JobsService,
-    private readonly videoAnalyzerService: VideoAnalysisService,
-    private readonly httpService: HttpService,
     private readonly logger: WinstonLoggerService,
+    private readonly fileProcessingService: FileProcessingService,
   ) {}
 
   onModuleInit() {
@@ -46,29 +38,37 @@ export class CandiateProcessingService {
           return;
         }
 
-        const resumeContent = await this.parseFile(candidate.resume);
+        const resumeContent = await this.fileProcessingService.parseFile(
+          candidate.resume,
+        );
 
-        const [description, experiences] = await Promise.all([
+        const [description, experiences, scoreSummary] = await Promise.all([
           this.getGeneralDescription(
             job!.description,
             company!.cultureDescription,
             resumeContent,
           ),
           this.parseExperiences(resumeContent),
+          this.getScoreSummary(
+            job!.description,
+            company!.cultureDescription,
+            resumeContent,
+          ),
         ]);
 
-        const resumeScore = await this.getResumeScore(
-          job!.description,
-          company!.cultureDescription,
-          resumeContent,
+        const score = this.getTotalScore(
+          scoreSummary.cultureScore,
+          scoreSummary.skillsScore,
         );
 
         await candidate.updateOne({
           description,
           experiences,
-          score: resumeScore.score,
-          skillScore: resumeScore.score,
-          skillSummary: resumeScore.summary,
+          score: score,
+          skillScore: scoreSummary.skillsScore,
+          skillSummary: scoreSummary.skillsSummary,
+          cultureScore: scoreSummary.cultureScore,
+          cultureSummary: scoreSummary.cultureSummary,
           processingState: ApplicationProcessingState.Completed,
         });
 
@@ -81,139 +81,13 @@ export class CandiateProcessingService {
         );
       },
     });
-
-    this.videoProcessingReciever.subscribe({
-      processMessage: async (message) => {
-        const data = JSON.parse(message.body);
-        const candidate = await this.candidateService.findById(
-          data.candidateId,
-        );
-
-        const job = await this.jobsService.findById(candidate?.job);
-        const company = await this.companyService.findById(job?.company);
-
-        if (!candidate) {
-          return;
-        }
-
-        const accessToken = await this.videoAnalyzerService.getAccessToken();
-        const videoTranscripts =
-          await this.videoAnalyzerService.getVideoCaptions(
-            candidate.videoIndexId,
-            accessToken,
-          );
-
-        const resumeContent = await this.parseFile(candidate.resume);
-
-        const [videoScore, resumeScore] = await Promise.all([
-          this.getVideoScore(
-            job!.description,
-            company!.cultureDescription,
-            videoTranscripts,
-          ),
-          this.getResumeScore(
-            job!.description,
-            company!.cultureDescription,
-            resumeContent,
-          ),
-        ]);
-
-        const score = this.getTotalScore(
-          resumeScore.score,
-          videoScore?.score || 0,
-        );
-
-        await candidate.updateOne({
-          score,
-          cultureScore: score,
-          cultureSummary: videoScore.summary,
-          skillScore: resumeScore.score,
-          skillSummary: resumeScore.summary,
-          processingState: ApplicationProcessingState.Completed,
-        });
-
-        this.logger.log(`${candidate.email}  has been processed.`);
-      },
-      processError: async (args) => {
-        console.log(
-          `Error occurred with ${args.entityPath} within ${args.fullyQualifiedNamespace}: `,
-          args.error,
-        );
-      },
-    });
-  }
-
-  async downloadFileAsBuffer(fileUrl: string): Promise<Buffer> {
-    const response = await lastValueFrom(
-      this.httpService.get(fileUrl, { responseType: 'arraybuffer' }),
-    );
-
-    return Buffer.from(response.data);
-  }
-
-  getCultureScore(coverLetterScore: number, videoResumeScore: number) {
-    return (coverLetterScore + videoResumeScore) / 2;
   }
 
   getTotalScore(skillScore: number, cultureScore: number) {
     return (skillScore + cultureScore) / 2;
   }
 
-  async getVideoScore(
-    jobDescription: string,
-    companyCulture: string,
-    videoTranscripts: string,
-  ): Promise<any> {
-    const model = this.createModel();
-
-    const prompt = ChatPromptTemplate.fromMessages([
-      [
-        'system',
-        `
-          As an experienced recruiter, your task is to evaluate candidates' video resume transcripts and perform a sentiment analysis of the video. 
-          You will be provided with details of the job description and the company culture.
-        
-          Your scoring should be based on how well the candidates align with the job description and the company's culture. Assign scores ranging from 1 to 10.
-        
-          You need to return JSON output in following format:
-        
-          SCHEMA:
-          -------
-          {{
-            score: float, // candidate's video score,
-            summary: string, // a brief explanation of the criteria you used to determine the score
-          }}
-        `,
-      ],
-      [
-        'user',
-        `
-        JOB DESCRIPTION
-        ---------------
-        {jobDescription}
-
-        COMPANY CULTURE
-        ---------------
-        {companyCulture}
-
-        VIDEO TRANSCRIPTS:
-        {videoTranscripts}
-      `,
-      ],
-    ]);
-
-    const chain = prompt.pipe(model).pipe(new JsonOutputParser());
-
-    const result = await chain.invoke({
-      jobDescription,
-      companyCulture,
-      videoTranscripts,
-    });
-
-    return result;
-  }
-
-  async getResumeScore(
+  async getScoreSummary(
     jobDescription: string,
     companyCulture: string,
     resume: string,
@@ -224,10 +98,10 @@ export class CandiateProcessingService {
       [
         'system',
         `
-          As an experienced recruiter, your task is to evaluate the candidates' resumes and conduct an analysis focusing on the mentioned experience and skills.
-          You will receive details of the job description and the company culture.
+          As an experienced recruiter, your task is to evaluate the candidates' skills by resumes and conduct an analysis focusing on the mentioned experience, skills and culture.
+          You will receive details of the job description.
 
-          Your scoring should reflect the alignment of the candidates with the job description and the skills required for the positions. 
+          Your scoring should reflect the alignment of the candidates with the job description, the skills required for the positions and culture fit. 
           Assign scores ranging from 1 to 10.
 
           STEPS.
@@ -241,8 +115,10 @@ export class CandiateProcessingService {
           SCHEMA:
           -------
           {{
-            score: float, // candidate's video score,
-            summary: string, // a brief explanation of the criteria you used to determine the score, should be markdown
+            cultureScore: float, // candidate's culture score,
+            cultureSummary: string, // a brief explanation of the criteria you used to determine the skills score, should be plain text.
+            skillsScore: float, // candidate's skills score,
+            skillsSummary: string, // a brief explanation of the criteria you used to determine the culture score, should be plain text.
           }}
         `,
       ],
@@ -292,12 +168,16 @@ export class CandiateProcessingService {
       [
         'system',
         `
-          As an experienced recruiter, your task is to summarize and give a description of the candidates' resumes,
+          As an experienced recruiter, your task is to summarize and give a description of the candidates' resume relative to job description and company culture.
           You should conduct an analysis focusing on the mentioned experience and skills.
-          You will receive details of the job description and the company culture.
+          You will receive details of the job description and the company culture. 
+
+          The summary should be around 200-300 words and should highlight the key points of the resume that align with the job description and the company culture.
+
+          Your tone should be professional and informative, yet concise.
 
           REQUIREMENT:
-          You should return answer in MARKDOWN format.
+          The result should be in a plain text.
         `,
       ],
       [
@@ -397,38 +277,6 @@ export class CandiateProcessingService {
     });
 
     return result?.experiences || [];
-  }
-
-  async parsePdf(fileUrl: string) {
-    const buffer = await this.downloadFileAsBuffer(fileUrl);
-    const pdf = await pdfParse(buffer);
-    const resumeContent = pdf.text;
-    return resumeContent;
-  }
-
-  async parseDocx(fileUrl: string) {
-    const buffer = await this.downloadFileAsBuffer(fileUrl);
-    const result = await mammoth.extractRawText({ buffer });
-    const resumeContent = result.value;
-    return resumeContent;
-  }
-
-  async parseFile(fileUrl: string) {
-    try {
-      const format = path.extname(fileUrl);
-
-      if (format.startsWith('.docx')) {
-        return this.parseDocx(fileUrl);
-      }
-
-      if (format.startsWith('.pdf')) {
-        return this.parsePdf(fileUrl);
-      }
-    } catch (err) {
-      this.logger.warn(err);
-    }
-
-    return null;
   }
 
   private createModel() {

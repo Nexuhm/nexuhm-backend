@@ -113,7 +113,7 @@ export class JobsService {
               min: number, // minimum salary
               max: number // maxiumum salary
               currency: // default to GBP, based on location can be EUR and USD
-              frequency: string, // Salary paycheck period, Enum Values {{weekly | monthly | yearly}}
+              frequency: string, // Salary paycheck period, Enum Values {{weekly | monthly | yearly | hourly}}
             }}
           }}
         `,

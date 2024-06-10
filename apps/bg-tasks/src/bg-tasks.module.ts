@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CandidateProcessingModule } from './modules/candidate-processing.module';
+import { FileProcessingService } from './modules/file-processing.service';
 
 @Module({
   imports: [
