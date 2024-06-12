@@ -90,10 +90,7 @@ export class JobsAdminController {
   ) {
     const job = await this.jobsService.findById(id);
 
-    if (
-      !user.roles.includes(UserRole.Owner) ||
-      !job?.company.equals(user.company)
-    ) {
+    if (!job?.company.equals(user.company)) {
       throw new BadRequestException();
     }
 
