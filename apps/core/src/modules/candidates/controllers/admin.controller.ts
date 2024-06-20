@@ -26,11 +26,12 @@ export class AdminCandidateController {
   @Get('/')
   async getCandidates(
     @User() user: UserDocument,
-    @Query() { limit, skip }: PaginationDto,
+    @Query() { page, pageSize }: PaginationDto,
     @Query() { jobId }: GetCandidatesListQueryDto,
   ) {
     const filters = jobId ? { job: jobId } : {};
-
+    const limit = pageSize || 10;
+    const skip = (page - 1) * limit;
     const data = await this.candidateSevrice
       .find({
         ...filters,

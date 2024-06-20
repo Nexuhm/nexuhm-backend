@@ -35,7 +35,7 @@ export class JobsService {
   }
 
   findBySlug(slug: string) {
-    return this.jobPostingModel.findOne({ slug });
+    return this.jobPostingModel.findOne({ slug }).populate('company', 'slug');
   }
 
   create(fields: AnyKeys<JobPosting>) {
