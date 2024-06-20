@@ -148,7 +148,7 @@ export class JobsService {
 
     const chain = prompt.pipe(model).pipe(new JsonOutputParser());
 
-    const result = await chain.invoke({
+    const result: any = await chain.invoke({
       ...fields,
       cultureDescription: company?.cultureDescription,
       companyDescription: company?.description,
