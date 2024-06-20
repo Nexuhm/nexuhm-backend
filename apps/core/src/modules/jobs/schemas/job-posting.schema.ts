@@ -52,6 +52,9 @@ export class JobPosting {
   @Prop({ type: [ScreeningQuestionSchema] })
   screeningQuestions: mongoose.Types.DocumentArray<ScreeningQuestion>;
 
+  @Prop()
+  isStealth: boolean;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

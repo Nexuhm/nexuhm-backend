@@ -15,6 +15,7 @@ import {
   JobApplicationOptionsDto,
 } from '../dto/job-application.dto';
 import { JobsApplicationService } from '../services/job-application.service';
+import { JobPostingState } from '../types/job-posting-state.enum';
 
 @ApiTags('Jobs Controller')
 @Controller('/jobs')
@@ -23,6 +24,15 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly jobApplicationService: JobsApplicationService,
   ) {}
+
+  @Get('/')
+  @ApiOperation({ description: 'Get all general job openings' })
+  getAllJobs() {
+    return this.jobsService.find({
+      isStealth: true,
+      state: JobPostingState.Published,
+    });
+  }
 
   @Get('/:slug')
   @ApiOperation({ description: 'Get job posting details' })

@@ -82,6 +82,10 @@ export class JobsService {
           Step 3.
           Use following JSON schema and generate posting fields.
 
+          IMPORTANT CONSIDERATIONS:
+          -------------------------
+          - If isStealth is true, then generate job posting without company details.
+
           REQUIREMENTS:
           ------------
           - You SHOULD USE given locale to generate job description. 
@@ -97,6 +101,7 @@ export class JobsService {
             title: string // well defined Job Title,
             description: string // brief description of the job, make sure to optimize for SEO.
             content: string // Generate a MARKDOWN content of the job posting, it should include sections such as Overview, Benefits etc. make sure formatting is well defined and attratcive, Shouldn't include title at the top.
+            isStealth: boolean // If true, then hide company details.
             employmentType: string /*
               Enum Values:
               full-time-employment,
@@ -129,6 +134,8 @@ export class JobsService {
         ---------------
         {cultureDescription}
 
+        IS STEALTH: {isStealth}
+
         QUERY:
         -----
 
@@ -147,6 +154,9 @@ export class JobsService {
       companyDescription: company?.description,
     });
 
-    return result;
+    return {
+      ...result,
+      isStealth: fields.isStealth,
+    };
   }
 }

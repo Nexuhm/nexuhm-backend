@@ -1,23 +1,19 @@
 import { PaginationOptions } from '../interface/pagination.interface';
-import { IsInt, Max, IsOptional, Min } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PaginationDto implements PaginationOptions {
-  @IsInt()
-  @Max(50)
-  @IsOptional()
   @ApiPropertyOptional({
-    maximum: 50,
-    default: 15,
+    default: 1,
   })
-  limit: number = 15;
+  @IsInt()
+  @IsOptional()
+  page: number = 15;
 
-  @IsInt()
-  @Min(0)
-  @IsOptional()
   @ApiPropertyOptional({
-    minimum: 0,
-    default: 0,
+    default: 10,
   })
-  skip: number = 0;
+  @IsInt()
+  @IsOptional()
+  pageSize?: number | undefined;
 }

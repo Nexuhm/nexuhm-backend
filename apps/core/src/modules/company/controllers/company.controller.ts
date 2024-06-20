@@ -16,11 +16,6 @@ import { Company } from '../schemas/company.schema';
 import { Model } from 'mongoose';
 import { JobPosting } from '@/core/modules/jobs/schemas/job-posting.schema';
 import { JobPostingState } from '@/core/modules/jobs/types/job-posting-state.enum';
-import { ApiBody } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
-import { CompanyDetailsDto } from '../dto/company-details.dto';
-import { UserDocument } from '../../users/schemas/user.schema';
-import { User } from '@/core/lib/decorators/user.decorator';
 
 @Controller('/company')
 export class CompanyController {
@@ -52,6 +47,9 @@ export class CompanyController {
     const query = this.jobPostingModel.find({
       company,
       state: JobPostingState.Published,
+      isStealth: {
+        $ne: true,
+      },
     });
 
     if (limit) {

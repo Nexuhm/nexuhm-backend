@@ -16,7 +16,6 @@ import { JobGenerationDto } from '../dto/job-generation.dto';
 import { JobPostingState } from '../types/job-posting-state.enum';
 import slugify from 'slugify';
 import mongoose from 'mongoose';
-import { UserRole } from '../../users/types/user-role.enum';
 
 @ApiTags('Jobs Controller')
 @Controller('/admin/jobs')
