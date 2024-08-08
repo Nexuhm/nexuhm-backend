@@ -36,14 +36,13 @@ $ yarn install
 
 ```bash
 # development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
+$ yarn run start:core --watch
 
 # production mode
-$ yarn run start:prod
+$ yarn run start:core
 ```
+
+If you want to run `bg-tasks` and `scheduler` simply replace `core` with respective app name.
 
 ## Test
 
