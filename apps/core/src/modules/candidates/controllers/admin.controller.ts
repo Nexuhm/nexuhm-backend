@@ -30,8 +30,9 @@ export class AdminCandidateController {
     @Query() { jobId }: GetCandidatesListQueryDto,
   ) {
     const filters = jobId ? { job: jobId } : {};
+    const pageNumber = page === 0 ? 1 : page || 1;
     const limit = pageSize || 10;
-    const skip = (page - 1) * limit;
+    const skip = (pageNumber - 1) * limit;
     const data = await this.candidateSevrice
       .find({
         ...filters,
