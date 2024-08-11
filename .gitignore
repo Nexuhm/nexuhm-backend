@@ -40,3 +40,6 @@ install-state.gz
 # Env files
 .env*
 !.env.example
+
+# Local SSL certificates
+/ssl
