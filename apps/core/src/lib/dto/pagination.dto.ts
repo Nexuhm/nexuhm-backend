@@ -8,7 +8,7 @@ export class PaginationDto implements PaginationOptions {
   })
   @IsInt()
   @IsOptional()
-  page: number = 15;
+  page: number = 1;
 
   @ApiPropertyOptional({
     default: 10,

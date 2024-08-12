@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -16,6 +17,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { SentryFilter } from './lib/filters/sentry.filter';
+import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 
 async function bootstrap() {
   Sentry.init({
@@ -23,7 +25,25 @@ async function bootstrap() {
     environment: process.env.SENTRY_ENVIRONMENT,
   });
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const httpsOptions: HttpsOptions = {};
+
+  // Enable HTTPS via use of local HTTP cert & key in the "ssl" directory
+  if (process.env.USE_LOCAL_HTTPS_CERTS === 'true') {
+    // Https
+    const sslKey = fs.readFileSync(
+      __dirname + '/../../../ssl/api.nexuhm-local.com.key.pem',
+    );
+    const sslCert = fs.readFileSync(
+      __dirname + '/../../../ssl/api.nexuhm-local.com.crt.pem',
+    );
+
+    httpsOptions.key = sslKey;
+    httpsOptions.cert = sslCert;
+  }
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    httpsOptions,
+  });
 
   app.set('trust proxy', 1);
   app.use(helmet());
@@ -44,7 +64,7 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new SentryFilter(httpAdapter));
 
-  app.use('/debug-sentry', function (req) {
+  app.use('/debug-sentry', function () {
     throw new Error('Sentry error!');
   });
 
