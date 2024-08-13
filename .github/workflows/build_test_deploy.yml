@@ -49,27 +49,42 @@ jobs:
         run: yarn build core
       - name: Build with Nexuhum Backend Scheduler
         run: yarn build scheduler
-      - name: Build with Nexuhum Backend Background Tasks
+      - name: Build with Nexuhum Backend bg-tasks
         run: yarn build bg-tasks
+      - uses: actions/cache@v2
+        id: cache-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}
           
   # Lint job
   lint:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Linter
+      - uses: actions/cache@v2
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}
+      - name: Lint
         run: yarn lint
         
   # Test job
   test:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: build
     steps:
+      - uses: actions/cache@v2
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}
       - name: Test Core
         run: yarn test core
       - name: Test Scheduler
         run: yarn test scheduler
-      - name: Test Background Tasks
+      - name: Test bg-tasks
         run: yarn test bg-tasks
       - name: Test Code Coverage
         run: yarn test --coverage
