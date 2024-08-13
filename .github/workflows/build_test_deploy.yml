@@ -80,11 +80,7 @@ jobs:
         with:
           path: ./*
           key: ${{ github.sha }}
-      - name: Test Core
-        run: yarn test core
-      - name: Test Scheduler
-        run: yarn test scheduler
-      - name: Test bg-tasks
-        run: yarn test bg-tasks
+      - name: Run 
+        run: yarn test
       - name: Test Code Coverage
-        run: yarn test --coverage
+        run: yarn test:cov
